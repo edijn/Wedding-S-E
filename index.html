@@ -77,10 +77,12 @@ async function appel(charge, ms){
 /* réveille l'instance Apps Script pendant que l'invité tape */
 if (API) fetch(API, { method:"POST", body: JSON.stringify({ action:"ping" }) }).catch(() => {});
 
-/* invité déjà identifié sur cet appareil : on passe directement */
+/* Le code est redemandé dès que l'onglet est fermé : on ne garde rien
+   de durable. On nettoie au passage ce qu'une ancienne version avait pu
+   enregistrer sur l'appareil. */
 try {
-  const memo = JSON.parse(localStorage.getItem("foyer-invite") || "null");
-  if (memo && memo.code) location.replace("invitation.html");
+  localStorage.removeItem("foyer-invite");
+  localStorage.removeItem("code-invite");
 } catch(e){}
 
 cases.forEach((c,i) => {
@@ -127,7 +129,7 @@ async function verifier(){
 
     if (r && r.ok && r.foyer && r.foyer.membres){
       try {
-        localStorage.setItem("foyer-invite", JSON.stringify(r.foyer));
+        sessionStorage.setItem("foyer-invite", JSON.stringify(r.foyer));
       } catch(e){}
       msg.textContent = "Bienvenue…";
       location.href = "invitation.html";

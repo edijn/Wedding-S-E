@@ -134,6 +134,10 @@ body{
 
 .note{font-size:.95rem;line-height:1.7;color:var(--dim);max-width:28rem;margin:0 auto}
 .note strong{color:var(--ivoire);font-weight:500}
+.sortie{margin:2.4rem 0 0;font-size:.82rem}
+.sortie a{color:var(--gris);text-decoration-color:var(--encre-3)}
+.sortie a:hover{color:var(--dim)}
+
 .deja-repondu{display:none;font-size:.92rem;color:var(--or);margin:0 auto 1.2rem;max-width:28rem}
 .deja-repondu.actif{display:block}
 

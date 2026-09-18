@@ -32,6 +32,7 @@
 
     <hr class="filet">
     <p class="note">Merci de nous répondre avant le <strong id="date-limite"></strong>.</p>
+    <p class="sortie"><a href="#" id="changer-code">Saisir un autre code</a></p>
   </div>
 </section>
 
@@ -93,7 +94,7 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 
 /* ── garde : sans code validé, on renvoie vers la page du code ── */
 let foyer = null;
-try { foyer = JSON.parse(localStorage.getItem("foyer-invite") || "null"); } catch(e){}
+try { foyer = JSON.parse(sessionStorage.getItem("foyer-invite") || "null"); } catch(e){}
 if (!foyer || !foyer.code || !foyer.membres || !foyer.membres.length){
   location.replace("index.html");
 }
@@ -218,6 +219,12 @@ function majBouton(){
   $("#envoyer").disabled = !r || (r === "partiel" && coches().length === 0);
 }
 
+$("#changer-code").addEventListener("click", e => {
+  e.preventDefault();
+  try { sessionStorage.removeItem("foyer-invite"); } catch(err){}
+  location.replace("index.html");
+});
+
 $("#envoyer").addEventListener("click", async () => {
   const r = choisie();
   if (!r) return;
@@ -239,7 +246,7 @@ $("#envoyer").addEventListener("click", async () => {
     if (!rep || !rep.ok) throw new Error((rep && rep.erreur) || "refus");
 
     foyer.reponse = r === "tous" ? "Tous présents" : r === "partiel" ? "Présence partielle" : "Absents";
-    try { localStorage.setItem("foyer-invite", JSON.stringify(foyer)); } catch(e){}
+    try { sessionStorage.setItem("foyer-invite", JSON.stringify(foyer)); } catch(e){}
     majReponse();
 
     $("#formulaire").style.display = "none";
