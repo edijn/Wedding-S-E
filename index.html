@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edi &amp; Sophie — 3 octobre 2026</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section id="porte">
+  <div class="porte-bloc">
+    <h1 class="monogramme">Edi <span class="et">&amp;</span> Sophie</h1>
+    <p class="porte-sous">3 octobre 2026</p>
+    <p class="porte-consigne">Entrez le code à 4&nbsp;chiffres qui figure sur votre message.</p>
+
+    <div class="chiffres" id="chiffres">
+      <input type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Chiffre 1">
+      <input type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Chiffre 2">
+      <input type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Chiffre 3">
+      <input type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Chiffre 4">
+    </div>
+
+    <p id="porte-msg" role="status"></p>
+    <p id="porte-detail"></p>
+  </div>
+</section>
+
+<script src="config.js"></script>
+<script>
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+const cases  = $$("#chiffres input");
+const bloc   = $("#chiffres");
+const msg    = $("#porte-msg");
+const detail = $("#porte-detail");
+
+/* ajoute ?debug=1 à l'URL pour voir la réponse brute du serveur */
+const DEBUG = new URLSearchParams(location.search).has("debug");
+
+/* Appel serveur : pas d'en-tête personnalisé (Apps Script bloquerait),
+   délai maximum, et on lit le texte brut avant de tenter le JSON —
+   c'est ce qui permet de voir une page d'erreur Google au lieu de rester
+   bloqué sur « Vérification… ». */
+async function appel(charge, ms){
+  const ctrl = new AbortController();
+  const minuteur = setTimeout(() => ctrl.abort(), ms || 20000);
+  try {
+    const r = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify(charge),
+      signal: ctrl.signal,
+      redirect: "follow"
+    });
+    const txt = await r.text();
+    if (DEBUG) detail.textContent = "HTTP " + r.status + " · " + txt.slice(0, 400);
+    if (!r.ok) throw new Error("Le serveur a répondu " + r.status + ".");
+    try {
+      return JSON.parse(txt);
+    } catch(e){
+      throw new Error(
+        /<(!doctype|html)/i.test(txt)
+          ? "Le service renvoie une page Google au lieu des données : dans Apps Script, « Qui a accès » doit être réglé sur « Tout le monde »."
+          : "Réponse illisible du serveur."
+      );
+    }
+  } finally {
+    clearTimeout(minuteur);
+  }
+}
+
+/* réveille l'instance Apps Script pendant que l'invité tape */
+if (API) fetch(API, { method:"POST", body: JSON.stringify({ action:"ping" }) }).catch(() => {});
+
+/* invité déjà identifié sur cet appareil : on passe directement */
+try {
+  const memo = JSON.parse(localStorage.getItem("foyer-invite") || "null");
+  if (memo && memo.code) location.replace("invitation.html");
+} catch(e){}
+
+cases.forEach((c,i) => {
+  c.addEventListener("input", () => {
+    c.value = c.value.replace(/\D/g,"").slice(0,1);
+    bloc.classList.remove("faux");
+    msg.textContent = ""; msg.className = "";
+    if (c.value && i < 3) cases[i+1].focus();
+    if (cases.every(x => x.value)) verifier();
+  });
+  c.addEventListener("keydown", e => {
+    if (e.key === "Backspace" && !c.value && i > 0) cases[i-1].focus();
+    if (e.key === "ArrowLeft"  && i > 0) cases[i-1].focus();
+    if (e.key === "ArrowRight" && i < 3) cases[i+1].focus();
+    if (e.key === "Enter") verifier();
+  });
+  c.addEventListener("paste", e => {
+    e.preventDefault();
+    const d = (e.clipboardData.getData("text")||"").replace(/\D/g,"").slice(0,4);
+    d.split("").forEach((x,j) => cases[j].value = x);
+    if (d.length === 4) verifier(); else cases[Math.min(d.length,3)].focus();
+  });
+});
+setTimeout(() => cases[0].focus(), 350);
+
+let enCours = false;
+
+async function verifier(){
+  const code = cases.map(c => c.value).join("");
+  if (code.length < 4 || enCours) return;
+
+  if (!API){
+    echec("La page n’est pas encore reliée à sa base.", "config.js : la constante API est vide.");
+    return;
+  }
+
+  enCours = true;
+  bloc.classList.add("verif");
+  msg.className = "attente";
+  msg.textContent = "Vérification…";
+
+  try {
+    const r = await appel({ action:"ouvrir", code });
+
+    if (r && r.ok && r.foyer && r.foyer.membres){
+      try {
+        localStorage.setItem("foyer-invite", JSON.stringify(r.foyer));
+      } catch(e){}
+      msg.textContent = "Bienvenue…";
+      location.href = "invitation.html";
+      return;                                  // on ne réactive rien, on quitte la page
+    }
+
+    if (r && r.ok){
+      echec("Réponse incomplète du serveur.", JSON.stringify(r).slice(0,300));
+    } else {
+      echec("Ce code ne correspond à aucune invitation.", r && r.erreur ? r.erreur : "");
+    }
+  } catch(e){
+    echec(
+      e.name === "AbortError" ? "Le serveur ne répond pas. Réessayez." : "Connexion impossible.",
+      e.message || String(e)
+    );
+  } finally {
+    enCours = false;
+    bloc.classList.remove("verif");
+  }
+}
+
+function echec(texte, technique){
+  bloc.classList.add("faux","secousse");
+  msg.className = "erreur";
+  msg.textContent = texte;
+  if (technique && !DEBUG) detail.textContent = technique;
+  setTimeout(() => bloc.classList.remove("secousse"), 400);
+  cases.forEach(c => c.value = "");
+  cases[0].focus();
+}
+</script>
+</body>
+</html>

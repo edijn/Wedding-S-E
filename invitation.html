@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edi &amp; Sophie — 3 octobre 2026</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section id="invitation">
+  <div class="photo-cadre">
+    <img id="photo" alt="Edi et Sophie">
+    <div class="photo-vide" id="photo-vide">VOTRE PHOTO ICI</div>
+  </div>
+
+  <div class="corps">
+    <h1 class="noms">Edi<span class="et">&amp;</span>Sophie</h1>
+    <p class="accroche"><span id="ligne-invite"></span></p>
+
+    <div class="ceremonie">
+      <p class="ceremonie-date" id="ceremonie-date"></p>
+      <div class="etapes" id="etapes"></div>
+    </div>
+
+    <p class="deja-repondu" id="deja-repondu"></p>
+    <button class="btn btn-large" id="ouvrir-rsvp">Répondre à l’invitation</button>
+
+    <hr class="filet">
+    <p class="note">Merci de nous répondre avant le <strong id="date-limite"></strong>.</p>
+  </div>
+</section>
+
+<div class="voile" id="voile" role="dialog" aria-modal="true" aria-labelledby="rsvp-titre">
+  <div class="tiroir">
+
+    <div id="formulaire">
+      <h2 id="rsvp-titre">Serez-vous des nôtres&nbsp;?</h2>
+      <p class="intro" id="rsvp-intro"></p>
+
+      <div class="choix">
+        <label>
+          <input type="radio" name="reponse" value="tous">
+          <span class="choix-txt">Nous serons tous là<small id="txt-tous"></small></span>
+        </label>
+        <label id="label-partiel">
+          <input type="radio" name="reponse" value="partiel">
+          <span class="choix-txt">Une partie d’entre nous seulement<small>Vous cochez ensuite qui vient.</small></span>
+        </label>
+        <label>
+          <input type="radio" name="reponse" value="aucun">
+          <span class="choix-txt">Nous ne pourrons pas venir<small>Vous nous manquerez.</small></span>
+        </label>
+      </div>
+
+      <div class="membres" id="membres">
+        <p>Qui sera présent&nbsp;?</p>
+        <div id="membres-liste"></div>
+      </div>
+
+      <div class="champ">
+        <label for="mot">Un mot pour nous (facultatif)</label>
+        <textarea id="mot" maxlength="500" placeholder="Allergie, contrainte horaire, petit mot…"></textarea>
+      </div>
+
+      <p id="rsvp-erreur" role="alert"></p>
+
+      <div class="pied">
+        <button class="btn" id="envoyer" disabled>Envoyer notre réponse</button>
+        <button class="btn btn-fantome" id="fermer-rsvp">Annuler</button>
+      </div>
+    </div>
+
+    <div id="merci" style="display:none">
+      <div class="coche">✓</div>
+      <h2>C’est noté, merci&nbsp;!</h2>
+      <div class="recap" id="merci-recap"></div>
+      <p>Nous revenons vers vous très vite avec les derniers détails. Une erreur&nbsp;? Renvoyez simplement une nouvelle réponse.</p>
+      <button class="btn btn-fantome" id="fermer-merci">Fermer</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+/* ── garde : sans code validé, on renvoie vers la page du code ── */
+let foyer = null;
+try { foyer = JSON.parse(localStorage.getItem("foyer-invite") || "null"); } catch(e){}
+if (!foyer || !foyer.code || !foyer.membres || !foyer.membres.length){
+  location.replace("index.html");
+}
+
+const echap = s => String(s).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function liste(a){
+  if (!a.length) return "";
+  if (a.length === 1) return a[0];
+  return a.slice(0,-1).join(", ") + " et " + a[a.length-1];
+}
+
+async function appel(charge){
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 20000);
+  try {
+    const r = await fetch(API, { method:"POST", body: JSON.stringify(charge), signal: ctrl.signal });
+    const txt = await r.text();
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return JSON.parse(txt);
+  } finally { clearTimeout(t); }
+}
+
+/* ── contenu fixe ── */
+const ICONES = {
+  eglise: '<path d="M12 2.2v3"/><path d="M10.4 3.5h3.2"/><path d="M12 5.4 8.2 9.3V21h7.6V9.3z"/><path d="M8.2 11.6 4 14.1V21h4.2"/><path d="M15.8 11.6 20 14.1V21h-4.2"/><path d="M10.3 21v-3.1a1.7 1.7 0 0 1 3.4 0V21"/><circle cx="12" cy="12.6" r="1"/>',
+  chateau:'<path d="M3 21V7h2.2v2.1h3V7h2.3v2.1h3V7h2.3v2.1h3V7H21v14"/><path d="M2 21h20"/><path d="M10.1 21v-4.2a1.9 1.9 0 0 1 3.8 0V21"/><path d="M6.4 13.6h1.9"/><path d="M15.7 13.6h1.9"/>',
+  mairie: '<path d="M12 3 3 8h18z"/><path d="M5.2 9.4V18"/><path d="M9.7 9.4V18"/><path d="M14.3 9.4V18"/><path d="M18.8 9.4V18"/><path d="M3 18h18"/><path d="M2 21h20"/>',
+  verre:  '<path d="M6.4 3h11.2l-4.4 8.1V19"/><path d="M9.2 19h5.6"/><path d="M7.8 7.6h8.4"/>',
+  table:  '<path d="M4.5 4.5h15"/><path d="M12 4.5V21"/><path d="M8.2 9.2c0 2.1-1.2 3.4-2.6 3.4S3 11.3 3 9.2"/><path d="M21 9.2c0 2.1-1.2 3.4-2.6 3.4s-2.6-1.3-2.6-3.4"/>'
+};
+const svg = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.15" '
+  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+  + (ICONES[n] || ICONES.verre) + '</svg>';
+
+const img = $("#photo");
+img.addEventListener("load",  () => $("#photo-vide").style.display = "none");
+img.addEventListener("error", () => img.style.display = "none");
+img.src = PHOTO;
+
+$("#ceremonie-date").textContent = CEREMONIE.date;
+$("#date-limite").textContent = DATE_LIMITE;
+$("#etapes").innerHTML = CEREMONIE.etapes.map(e => {
+  const adr = e.maps
+    ? `<a href="${echap(e.maps)}" target="_blank" rel="noopener">${echap(e.adresse)}</a>`
+    : echap(e.adresse);
+  return `<div class="etape">
+      <div class="etape-icone">${svg(e.icone)}</div>
+      <div>
+        <p class="etape-heure">${echap(e.heure)}</p>
+        ${e.quoi ? `<p class="etape-quoi">${echap(e.quoi)}</p>` : ""}
+        <p class="etape-lieu">${echap(e.lieu)}</p>
+        ${e.adresse ? `<p class="etape-adresse">${adr}</p>` : ""}
+      </div>
+    </div>`;
+}).join("");
+
+/* ── contenu personnalisé ── */
+const m = foyer.membres;
+
+$("#ligne-invite").innerHTML = m.length === 1
+  ? `<strong>${echap(m[0])}</strong>, nous serions très heureux de vous avoir à nos côtés le jour de notre mariage.`
+  : `Nous serions très heureux de vous avoir à nos côtés le jour de notre mariage — <strong>${echap(liste(m))}</strong>.`;
+
+$("#rsvp-intro").textContent = m.length === 1
+  ? "Dites-nous simplement si vous pourrez venir."
+  : `Invitation au nom de : ${liste(m)}.`;
+
+$("#txt-tous").textContent = m.length === 1 ? "" : `Les ${m.length} personnes invitées.`;
+if (m.length === 1) $("#label-partiel").style.display = "none";
+
+$("#membres-liste").innerHTML = m.map((nom,i) =>
+  `<label><input type="checkbox" class="qui" value="${echap(nom)}" id="q${i}"><span>${echap(nom)}</span></label>`
+).join("");
+
+majReponse();
+
+function majReponse(){
+  const d = $("#deja-repondu");
+  if (foyer.reponse){
+    d.classList.add("actif");
+    d.textContent = "Votre réponse est bien enregistrée : " + foyer.reponse + ".";
+    $("#ouvrir-rsvp").textContent = "Modifier notre réponse";
+  } else {
+    d.classList.remove("actif");
+    $("#ouvrir-rsvp").textContent = "Répondre à l’invitation";
+  }
+}
+
+/* ── tiroir ── */
+const voile = $("#voile");
+$("#ouvrir-rsvp").addEventListener("click", () => {
+  voile.classList.add("actif");
+  document.body.style.overflow = "hidden";
+});
+$("#fermer-rsvp").addEventListener("click", fermer);
+$("#fermer-merci").addEventListener("click", fermer);
+voile.addEventListener("click", e => { if (e.target === voile) fermer(); });
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && voile.classList.contains("actif")) fermer();
+});
+function fermer(){
+  voile.classList.remove("actif");
+  document.body.style.overflow = "";
+}
+
+$$('input[name="reponse"]').forEach(r => {
+  r.addEventListener("change", () => {
+    $("#membres").classList.toggle("actif", r.value === "partiel" && r.checked);
+    $("#rsvp-erreur").textContent = "";
+    majBouton();
+  });
+});
+document.addEventListener("change", e => {
+  if (e.target.classList.contains("qui")){ $("#rsvp-erreur").textContent = ""; majBouton(); }
+});
+
+const choisie = () => { const r = $$('input[name="reponse"]').find(x => x.checked); return r ? r.value : null; };
+const coches  = () => $$(".qui").filter(c => c.checked).map(c => c.value);
+function majBouton(){
+  const r = choisie();
+  $("#envoyer").disabled = !r || (r === "partiel" && coches().length === 0);
+}
+
+$("#envoyer").addEventListener("click", async () => {
+  const r = choisie();
+  if (!r) return;
+  if (r === "partiel" && coches().length === 0){
+    $("#rsvp-erreur").textContent = "Cochez au moins une personne, ou choisissez une autre réponse.";
+    return;
+  }
+
+  const presents = r === "tous" ? foyer.membres.slice() : r === "partiel" ? coches() : [];
+  const btn = $("#envoyer");
+  btn.disabled = true;
+  btn.textContent = "Envoi…";
+
+  try {
+    const rep = await appel({
+      action:"repondre", code: foyer.code, reponse: r,
+      presents: presents, message: $("#mot").value.trim()
+    });
+    if (!rep || !rep.ok) throw new Error((rep && rep.erreur) || "refus");
+
+    foyer.reponse = r === "tous" ? "Tous présents" : r === "partiel" ? "Présence partielle" : "Absents";
+    try { localStorage.setItem("foyer-invite", JSON.stringify(foyer)); } catch(e){}
+    majReponse();
+
+    $("#formulaire").style.display = "none";
+    $("#merci").style.display = "block";
+    $("#merci-recap").textContent =
+        r === "aucun" ? "Vous ne pourrez pas être là."
+      : presents.length === 1 ? presents[0] + " sera présent·e."
+      : liste(presents) + " seront présents.";
+  } catch(e){
+    btn.disabled = false;
+    btn.textContent = "Envoyer notre réponse";
+    $("#rsvp-erreur").textContent = "L’envoi a échoué. Vérifiez votre connexion et réessayez.";
+  }
+});
+</script>
+</body>
+</html>
