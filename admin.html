@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi des réponses</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --encre:#0E1220; --encre-2:#171D30; --encre-3:#232A42;
+  --or:#E8B667; --ivoire:#F2EDE6; --dim:#B3AFA8;
+  --vert:#8FBF9F; --ambre:#E8B667; --gris:#6C7590; --erreur:#E98A7B;
+  --sans:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--encre);color:var(--ivoire);
+  font-family:var(--sans);font-weight:300;
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+/* ── écran mot de passe ── */
+#porte{min-height:100svh;display:grid;place-items:center;padding:2rem 1.5rem}
+#porte form{width:100%;max-width:21rem;text-align:center}
+#porte h1{font-size:1.1rem;font-weight:500;letter-spacing:.02em;margin:0 0 .4rem}
+#porte p.sous{font-size:.88rem;color:var(--dim);margin:0 0 2rem}
+input[type=password]{
+  width:100%;padding:.9rem 1rem;
+  background:var(--encre-2);border:1px solid var(--encre-3);border-radius:3px;
+  color:var(--ivoire);font-family:var(--sans);font-size:1rem;margin-bottom:.8rem;
+}
+input[type=password]:focus{border-color:var(--or);outline:none}
+.btn{
+  font-family:var(--sans);font-size:.92rem;font-weight:500;
+  padding:.9rem 1.6rem;border-radius:3px;
+  border:1px solid var(--or);background:var(--or);color:var(--encre);cursor:pointer;
+}
+.btn:hover{background:#F0C87E}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-plat{
+  background:transparent;color:var(--dim);border-color:var(--encre-3);
+  font-size:.85rem;padding:.55rem 1rem;
+}
+.btn-plat:hover{color:var(--ivoire);border-color:var(--dim);background:transparent}
+#porte-err{min-height:1.2rem;font-size:.85rem;color:var(--erreur);margin:.6rem 0 0}
+
+/* ── tableau de bord ── */
+#bord{display:none;padding:clamp(1rem,3.5vw,2.5rem);max-width:78rem;margin:0 auto}
+.entete{
+  display:flex;flex-wrap:wrap;gap:.8rem;
+  align-items:baseline;justify-content:space-between;margin-bottom:1.8rem;
+}
+.entete h1{font-size:1.25rem;font-weight:500;margin:0}
+.entete .actions{display:flex;gap:.5rem}
+
+.cartes{
+  display:grid;gap:.7rem;margin-bottom:1.8rem;
+  grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));
+}
+.carte{background:var(--encre-2);border:1px solid var(--encre-3);border-radius:4px;padding:1rem}
+.carte b{display:block;font-size:1.75rem;font-weight:600;line-height:1.1;margin-bottom:.25rem}
+.carte span{font-size:.78rem;color:var(--dim);line-height:1.35;display:block}
+.carte.vert b{color:var(--vert)}
+.carte.ambre b{color:var(--ambre)}
+.carte.gris b{color:var(--gris)}
+
+.filtres{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+.filtre{
+  font-family:var(--sans);font-size:.83rem;
+  padding:.45rem .9rem;border-radius:99px;cursor:pointer;
+  background:transparent;color:var(--dim);border:1px solid var(--encre-3);
+}
+.filtre:hover{color:var(--ivoire)}
+.filtre.on{background:var(--encre-3);color:var(--ivoire);border-color:var(--encre-3)}
+
+#recherche{
+  width:100%;max-width:20rem;padding:.6rem .85rem;margin-bottom:1rem;
+  background:var(--encre-2);border:1px solid var(--encre-3);border-radius:3px;
+  color:var(--ivoire);font-family:var(--sans);font-size:.9rem;
+}
+#recherche:focus{border-color:var(--or);outline:none}
+
+.tableau{overflow-x:auto;border:1px solid var(--encre-3);border-radius:4px}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:52rem}
+th{
+  text-align:left;font-weight:500;font-size:.76rem;color:var(--dim);
+  padding:.8rem .9rem;background:var(--encre-2);
+  border-bottom:1px solid var(--encre-3);white-space:nowrap;
+}
+td{padding:.8rem .9rem;border-bottom:1px solid rgba(35,42,66,.6);vertical-align:top}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:rgba(35,42,66,.28)}
+td.nom{font-weight:500}
+td.dim{color:var(--dim)}
+td.msg{max-width:16rem;color:var(--dim);font-size:.83rem}
+
+.pastille{
+  display:inline-block;padding:.22rem .6rem;border-radius:99px;
+  font-size:.75rem;white-space:nowrap;
+}
+.pastille.repondu{background:rgba(143,191,159,.14);color:var(--vert)}
+.pastille.ouvert{background:rgba(232,182,103,.14);color:var(--ambre)}
+.pastille.silence{background:rgba(108,117,144,.18);color:#96A0BC}
+
+.vide{padding:2.5rem 1rem;text-align:center;color:var(--dim);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<section id="porte">
+  <form id="form-porte">
+    <h1>Suivi des réponses</h1>
+    <p class="sous">Edi &amp; Sophie — 3 octobre 2026</p>
+    <input type="password" id="mdp" placeholder="Mot de passe" autocomplete="current-password" required>
+    <button class="btn" type="submit" id="entrer" style="width:100%">Ouvrir le suivi</button>
+    <p id="porte-err" role="alert"></p>
+  </form>
+</section>
+
+<section id="bord">
+  <div class="entete">
+    <h1>Suivi des réponses</h1>
+    <div class="actions">
+      <button class="btn-plat btn" id="rafraichir">Actualiser</button>
+      <button class="btn-plat btn" id="csv">Export CSV</button>
+      <button class="btn-plat btn" id="sortir">Quitter</button>
+    </div>
+  </div>
+
+  <div class="cartes" id="cartes"></div>
+
+  <div class="filtres" id="filtres">
+    <button class="filtre on" data-f="tous">Tous</button>
+    <button class="filtre" data-f="repondu">Ont répondu</button>
+    <button class="filtre" data-f="ouvert">Ouvert, sans réponse</button>
+    <button class="filtre" data-f="silence">Lien jamais ouvert</button>
+  </div>
+
+  <input type="search" id="recherche" placeholder="Chercher un foyer ou un prénom…">
+
+  <div class="tableau">
+    <table>
+      <thead>
+        <tr>
+          <th>Foyer</th><th>Code</th><th>Invités</th><th>État</th>
+          <th>Vu le</th><th>Réponse</th><th>Présents</th><th>Répondu le</th><th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="corps"></tbody>
+    </table>
+  </div>
+  <div class="vide" id="vide" style="display:none">Aucun foyer ne correspond.</div>
+</section>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   Colle ici la MÊME URL Apps Script que dans index.html.
+   Le mot de passe, lui, n'est pas dans ce fichier : il est vérifié
+   côté serveur, donc il reste invisible dans le code source.
+   ══════════════════════════════════════════════════════════════════ */
+const API = "";
+
+
+let donnees = null, filtre = "tous", mdp = "";
+
+const $ = s => document.querySelector(s);
+const echap = s => String(s).replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const LIBELLE = { repondu:"A répondu", ouvert:"Ouvert, sans réponse", silence:"Jamais ouvert" };
+
+async function charger(motDePasse){
+  const r = await fetch(API, { method:"POST", body: JSON.stringify({ action:"admin", motDePasse }) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+$("#form-porte").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = $("#entrer"), err = $("#porte-err");
+  if (!API){ err.textContent = "API non configurée dans ce fichier."; return; }
+  btn.disabled = true; btn.textContent = "Vérification…"; err.textContent = "";
+  try {
+    const rep = await charger($("#mdp").value);
+    if (!rep.ok){ err.textContent = "Mot de passe incorrect."; return; }
+    mdp = $("#mdp").value;
+    try { sessionStorage.setItem("mdp-admin", mdp); } catch(e){}
+    donnees = rep;
+    $("#porte").style.display = "none";
+    $("#bord").style.display = "block";
+    rendre();
+  } catch(e){
+    err.textContent = "Connexion impossible.";
+  } finally {
+    btn.disabled = false; btn.textContent = "Ouvrir le suivi";
+    $("#mdp").value = "";
+  }
+});
+
+/* session déjà ouverte dans cet onglet */
+(async () => {
+  let m = null;
+  try { m = sessionStorage.getItem("mdp-admin"); } catch(e){}
+  if (!m || !API) return;
+  try {
+    const rep = await charger(m);
+    if (rep.ok){
+      mdp = m; donnees = rep;
+      $("#porte").style.display = "none";
+      $("#bord").style.display = "block";
+      rendre();
+    }
+  } catch(e){}
+})();
+
+$("#rafraichir").addEventListener("click", async () => {
+  const b = $("#rafraichir"); b.disabled = true; b.textContent = "…";
+  try { const r = await charger(mdp); if (r.ok){ donnees = r; rendre(); } } catch(e){}
+  b.disabled = false; b.textContent = "Actualiser";
+});
+
+$("#sortir").addEventListener("click", () => {
+  try { sessionStorage.removeItem("mdp-admin"); } catch(e){}
+  location.reload();
+});
+
+document.querySelectorAll(".filtre").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".filtre").forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    filtre = b.dataset.f;
+    rendre();
+  });
+});
+$("#recherche").addEventListener("input", rendre);
+
+function visibles(){
+  const q = $("#recherche").value.trim().toLowerCase();
+  return donnees.foyers.filter(f => {
+    if (filtre !== "tous" && f.etat !== filtre) return false;
+    if (!q) return true;
+    return (f.nom + " " + f.membres + " " + f.code).toLowerCase().includes(q);
+  });
+}
+
+function rendre(){
+  const t = donnees.total;
+  $("#cartes").innerHTML = `
+    <div class="carte vert"><b>${t.presents}</b><span>personnes confirmées présentes</span></div>
+    <div class="carte"><b>${t.repondu} / ${t.foyers}</b><span>foyers ayant répondu</span></div>
+    <div class="carte ambre"><b>${t.ouvert}</b><span>ont ouvert, sans répondre</span></div>
+    <div class="carte gris"><b>${t.silence}</b><span>n’ont jamais ouvert le lien</span></div>
+    <div class="carte"><b>${t.absents}</b><span>personnes déclarées absentes</span></div>
+    <div class="carte"><b>${t.invites}</b><span>personnes invitées au total</span></div>`;
+
+  const l = visibles();
+  $("#vide").style.display = l.length ? "none" : "block";
+  $("#corps").innerHTML = l.map(f => `
+    <tr>
+      <td class="nom">${echap(f.nom)}</td>
+      <td class="dim">${echap(f.code)}</td>
+      <td class="dim">${echap(f.membres)}</td>
+      <td><span class="pastille ${f.etat}">${LIBELLE[f.etat]}</span></td>
+      <td class="dim">${echap(f.vuLe) || "—"}</td>
+      <td>${echap(f.repondu) || "—"}</td>
+      <td class="dim">${echap(f.presents) || "—"}</td>
+      <td class="dim">${echap(f.reponduLe) || "—"}</td>
+      <td class="msg">${echap(f.message) || ""}</td>
+    </tr>`).join("");
+}
+
+$("#csv").addEventListener("click", () => {
+  const cols = ["nom","code","membres","etat","vuLe","repondu","presents","nbPresents","reponduLe","message"];
+  const entete = ["Foyer","Code","Invités","État","Vu le","Réponse","Présents","Nb","Répondu le","Message"];
+  const guil = v => '"' + String(v == null ? "" : v).replace(/"/g,'""') + '"';
+  const csv = [entete.map(guil).join(",")]
+    .concat(visibles().map(f => cols.map(c => guil(c === "etat" ? LIBELLE[f.etat] : f[c])).join(",")))
+    .join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type:"text/csv;charset=utf-8" }));
+  a.download = "reponses-mariage.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>
