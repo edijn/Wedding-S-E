@@ -1,9 +1,21 @@
 <!DOCTYPE html>
+<!-- ══════════════════════════════════════════════════════════
+     INVITATION — v2
+     Part de v1. Seul changement : la hauteur du cadre photo devient
+     continue (droite 18vw + 20rem) au lieu de trois paliers @media.
+     Ne rien modifier ici : toute évolution part d'une copie numérotée.
+
+     Contenu : deux journées (samedi église + cocktail, dimanche
+     brunch), tasse fumante, heures en gris, dates réduites,
+     journée centrée par marges automatiques.
+     Issue de design-invitation.html, banc RSVP retiré.
+     ══════════════════════════════════════════════════════════ -->
+
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sophie &amp; Edi — 21 août 2027</title>
+<title>v2 — Design — invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -74,18 +86,27 @@ body{
   padding:0;
 }
 
-/* Sur téléphone la page entière doit tenir sans défilement :
-   la photo est donc plafonnée en hauteur d'écran, pas en ratio. */
+/* ── la hauteur du cadre ──
+   Plus d'aspect-ratio, plus de paliers @media : la hauteur est une
+   droite continue en fonction de la largeur de fenêtre.
+
+       hauteur = 18 % de la largeur + 20 rem
+
+   Elle bouge donc à CHAQUE pixel de redimensionnement, sans saut.
+   Le 20 rem est la part fixe qui garantit un cadre déjà haut sur
+   téléphone ; le 18vw est la part qui suit l'élargissement.
+
+   Le plafond de 58svh n'est là que pour les écrans très bas. Il
+   entre en jeu vers 830 px de large — c'est-à-dire pile au moment
+   où #invitation atteint son max-width de 52rem et cesse lui aussi
+   de s'élargir. Largeur et hauteur se figent donc ensemble. */
 .photo-cadre{
   position:relative;
   width:100%;
-  aspect-ratio:5/4;
-  max-height:35svh;
+  height:min(calc(18vw + 20rem), 58svh);
   overflow:hidden;
   background:var(--encre);
 }
-@media(min-width:40rem){.photo-cadre{aspect-ratio:16/10;max-height:56svh}}
-@media(min-width:64rem){.photo-cadre{aspect-ratio:21/9;max-height:54svh}}
 
 .photo-cadre img{
   width:100%;height:100%;
@@ -401,6 +422,172 @@ body{
 .note strong{color:var(--ivoire);font-weight:400}
 
 
+
+/* ══════════════════════════════════════════════════════════════════
+   6. LE PANNEAU RSVP
+   Dans la vraie page il s'ouvre par-dessus l'invitation. Ici il est
+   posé à la suite, pour qu'on puisse en travailler le design.
+   ══════════════════════════════════════════════════════════════════ */
+.demo-separateur{
+  border-top:1px solid var(--encre-3);
+  margin:5rem auto 0;
+  max-width:52rem;
+  padding:2rem 1.5rem 0;
+}
+.demo-titre{
+  font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:#4A5372;margin:0 0 1.6rem;text-align:center;
+}
+
+.tiroir{
+  background:var(--encre-2);
+  border:1px solid var(--encre-3);
+  border-radius:4px;
+  width:100%;max-width:32rem;
+  margin:0 auto;
+  padding:2.4rem 1.8rem 2rem;
+}
+@media(min-width:40rem){.tiroir{padding:2.6rem}}
+
+.tiroir h2{
+  font-family:var(--titre);
+  font-weight:400;
+  font-size:1.5rem;
+  line-height:1.3;
+  margin:0 0 .5rem;
+}
+.tiroir p.intro{
+  font-size:.92rem;
+  line-height:1.6;
+  color:var(--dim);
+  margin:0 0 1.9rem;
+}
+
+/* ── les trois réponses ── */
+.choix{display:grid;gap:.7rem;margin:0 0 1.5rem}
+.choix label{
+  display:flex;align-items:flex-start;gap:.9rem;
+  padding:1.05rem 1.1rem;
+  border:1px solid var(--encre-3);
+  border-radius:3px;
+  cursor:pointer;
+  transition:border-color .16s ease,background .16s ease;
+}
+.choix label:hover{border-color:var(--dim)}
+.choix label:has(input:checked){border-color:var(--or);background:rgba(232,182,103,.06)}
+.choix input{
+  appearance:none;
+  width:1.05rem;height:1.05rem;margin:.2rem 0 0;flex:0 0 auto;
+  border:1px solid var(--dim);border-radius:50%;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+.choix input:checked{border-color:var(--or);box-shadow:inset 0 0 0 4px var(--or)}
+.choix-txt{font-size:.96rem;line-height:1.45}
+.choix-txt small{display:block;color:var(--dim);font-size:.83rem;margin-top:.15rem}
+
+/* ── le choix mariage / brunch ──
+   Deux pastilles côte à côte, visibles seulement quand la réponse
+   ou la personne concernée est retenue. */
+.venue{
+  display:flex;
+  gap:.5rem;
+  margin:.5rem 0 .2rem 2rem;
+}
+.venue label{
+  flex:1;
+  display:block;
+  text-align:center;
+  padding:.55rem .4rem;
+  border:1px solid var(--encre-3);
+  border-radius:3px;
+  cursor:pointer;
+  font-size:.85rem;
+  color:var(--dim);
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+.venue label:has(input:checked){
+  border-color:var(--or);
+  color:var(--ivoire);
+  background:rgba(232,182,103,.07);
+}
+/* La pastille entière est la cible : le rond natif disparaît. */
+.venue input{position:absolute;opacity:0;width:0;height:0}
+
+/* ── les cases par personne ── */
+.membre{padding:.45rem 0;border-bottom:1px solid rgba(35,42,66,.55)}
+.membre:last-child{border-bottom:0}
+
+.membres{
+  padding:1.3rem 0 .4rem;
+  border-top:1px solid var(--encre-3);
+  margin-bottom:1.4rem;
+}
+.membres > p{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 .9rem;
+}
+.membre > label{
+  display:flex;align-items:center;gap:.85rem;
+  padding:.5rem .2rem;cursor:pointer;
+  font-size:1rem;
+}
+.membre > label input{
+  appearance:none;
+  width:1.15rem;height:1.15rem;flex:0 0 auto;
+  border:1px solid var(--dim);border-radius:2px;
+  position:relative;
+  transition:background .16s ease,border-color .16s ease;
+}
+.membre > label input:checked{background:var(--or);border-color:var(--or)}
+.membre > label input:checked::after{
+  content:"";position:absolute;
+  left:.34rem;top:.13rem;
+  width:.26rem;height:.55rem;
+  border:solid var(--encre);border-width:0 2px 2px 0;
+  transform:rotate(43deg);
+}
+
+/* ── le mot libre ── */
+.champ{margin-bottom:1.6rem}
+.champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:.5rem}
+.champ textarea{
+  width:100%;min-height:5rem;
+  background:var(--encre);
+  border:1px solid var(--encre-3);border-radius:3px;
+  color:var(--ivoire);
+  font-family:var(--texte);font-size:.95rem;font-weight:300;
+  padding:.85rem;resize:vertical;
+}
+.champ textarea:focus{border-color:var(--or);outline:none}
+
+.pied{display:grid;gap:.7rem}
+
+
+/* ── l'écran de confirmation ── */
+.merci{text-align:center;padding:2.2rem .4rem .6rem}
+.merci .coche{
+  width:3rem;height:3rem;margin:0 auto 1.5rem;
+  border:1px solid var(--or);border-radius:50%;
+  display:grid;place-items:center;
+  color:var(--or);font-size:1.2rem;
+}
+.merci h2{margin-bottom:.9rem}
+/* l'emoji garde sa couleur propre, hors de l'italique dorée */
+.recap .emoji{font-style:normal;font-size:.9em;margin-left:.15em}
+
+.recap em{font-style:normal;color:var(--or)}
+.merci .recap{
+  font-family:var(--noms);
+  font-style:italic;
+  font-size:1.25rem;line-height:1.5;
+  border-top:1px solid var(--encre-3);
+  border-bottom:1px solid var(--encre-3);
+  padding:1.3rem 0;margin-bottom:1.6rem;
+}
+.merci p{
+  color:var(--dim);font-size:.93rem;line-height:1.65;
+  margin:0 auto 1.8rem;max-width:23rem;
+}
 
 @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
