@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <!-- ══════════════════════════════════════════════════════════
-     INVITATION — v2
-     Part de v1. Seul changement : la hauteur du cadre photo devient
-     continue (droite 18vw + 20rem) au lieu de trois paliers @media.
+     INVITATION — v5
+     Mélange de v3 et v4 : les réglages de v4 sur téléphone, ceux de v3
+     sur iPad et ordinateur. Obtenu en recalant la droite de hauteur sur
+     ces deux points plutôt qu'en rajoutant des paliers @media.
      Ne rien modifier ici : toute évolution part d'une copie numérotée.
 
      Contenu : deux journées (samedi église + cocktail, dimanche
@@ -15,7 +16,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>v2 — Design — invitation</title>
+<title>v5 — Design — invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -30,16 +31,16 @@
   --encre-3:  #232A42;
   --or:       #E8B667;
   /* La respiration entre les trois blocs du bas : phrase, journée, RSVP. */
-  --gap-bloc: clamp(.7rem,2.6vw,1.7rem);
+  --gap-bloc: clamp(.7rem,2.6vw,1.15rem);
   /* Unité de base des deux colonnes. Tous les textes en dérivent par
      un rapport fixe, donc changer cette seule valeur les redimensionne
      ensemble sans casser leur hiérarchie. */
   --te: clamp(.74rem,3.2vw,1rem);
   /* Le retrait sous la note, jusqu'au bord de l'écran. */
-  --pied: clamp(1.15rem,3.6svh,2.2rem);
+  --pied: clamp(1.15rem,3.6svh,1.5rem);
   /* Retrait sous la phrase posée sur la photo : c'est aussi la
      hauteur qui sépare le bas du texte du bord du cadre. */
-  --sous-phrase: clamp(.95rem,3.4vw,1.6rem);
+  --sous-phrase: clamp(1.45rem,calc(.61vw + 1.28rem),1.6rem);
   /* Air entre le bord du cadre et le début du contenu bleu. */
   --haut-corps: clamp(.35rem,1.4vw,1rem);
   --ivoire:   #F2EDE6;
@@ -80,7 +81,10 @@ body{
 #invitation{
   max-width:52rem;
   margin:0 auto;
-  min-height:100svh;
+  /* hauteur EXACTE, pas minimale : le contenu ne peut plus pousser la
+     page vers le bas, donc le bouton reste toujours dans l'écran. */
+  height:100svh;
+  overflow:hidden;
   display:flex;
   flex-direction:column;
   padding:0;
@@ -103,7 +107,20 @@ body{
 .photo-cadre{
   position:relative;
   width:100%;
-  height:min(calc(18vw + 20rem), 58svh);
+  /* hauteur SOUHAITÉE ; flex-shrink la réduit si la page déborde.
+
+     Cette droite est calée sur deux points mesurés :
+       440 px de large (iPhone 16 Pro Max) → 349 px, la valeur de v4
+       820 px de large (iPad)              → 466 px, la valeur de v3
+     Elle donne donc v4 sur téléphone et v3 sur iPad, sans palier :
+     la pente est simplement plus forte qu'avant (30.9vw au lieu de
+     16vw), si bien que le cadre s'étire plus vite en s'élargissant.
+
+     Le plafond revient à 50svh, la valeur de v3 : c'est lui qui
+     gouverne l'ordinateur, où le cadre est le plus panoramique. */
+  height:min(calc(30.9vw + 13.3rem), 50svh);
+  flex:0 1 auto;
+  min-height:0;
   overflow:hidden;
   background:var(--encre);
 }
@@ -180,7 +197,9 @@ body{
 }
 
 .corps{
-  flex:1;
+  /* 1 0 auto : le corps prend le blanc restant mais ne rétrécit
+     jamais — dates, bouton et note gardent leur taille. */
+  flex:1 0 auto;
   display:flex;
   flex-direction:column;
   padding:var(--haut-corps) clamp(1.2rem,5vw,3rem) 0;
@@ -292,8 +311,8 @@ body{
 
 /* Deux jours empilés : chacun porte sa date puis ses moments. */
 .jour + .jour{
-  margin-top:clamp(.55rem,2.2vw,1.1rem);
-  padding-top:clamp(.55rem,2.2vw,1.1rem);
+  margin-top:clamp(.55rem,2.2vw,.75rem);
+  padding-top:clamp(.55rem,2.2vw,.75rem);
   border-top:1px solid var(--encre-3);
 }
 
