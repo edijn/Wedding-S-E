@@ -19,6 +19,12 @@
   --or:       #E8B667;
   /* La respiration entre les trois blocs du bas : phrase, journée, RSVP. */
   --gap-bloc: clamp(1.95rem,6.2vw,3.1rem);
+  /* Unité de base des deux colonnes. Tous les textes en dérivent par
+     un rapport fixe, donc changer cette seule valeur les redimensionne
+     ensemble sans casser leur hiérarchie. */
+  --te: clamp(.74rem,3.2vw,1rem);
+  /* Le retrait sous la note, jusqu'au bord de l'écran. */
+  --pied: clamp(1rem,3.4svh,1.9rem);
   --ivoire:   #F2EDE6;
   --dim:      #B3AFA8;
   --erreur:   #E98A7B;
@@ -136,7 +142,7 @@ body{
 /* margin-top:auto absorbe tout le blanc restant ; le padding du bas
    laisse le petit retrait par rapport au bord de l'écran. */
 .bloc-rsvp{
-  padding-bottom:calc(clamp(1.6rem,5svh,3rem) + env(safe-area-inset-bottom,0px));
+  padding-bottom:calc(var(--pied) + env(safe-area-inset-bottom,0px));
 }
 
 /* ── les prénoms ── */
@@ -237,25 +243,23 @@ body{
 }
 
 /* ── les deux moments, côte à côte ──
-   Icône à gauche, texte à droite dans chaque colonne. Un filet
-   vertical sépare les deux. */
+   Plus de filet entre les colonnes : le blanc suffit à les séparer. */
 .etapes{
   display:grid;
   grid-template-columns:1fr 1fr;
+  gap:clamp(.5rem,2.5vw,1.6rem);
   text-align:left;
 }
 .etape{
   display:grid;
   grid-template-columns:auto 1fr;
-  gap:clamp(.45rem,2vw,.8rem);
+  gap:clamp(.4rem,1.8vw,.8rem);
   align-items:center;
-  padding:0 clamp(.35rem,1.6vw,.8rem);
 }
-.etape + .etape{border-left:1px solid var(--encre-3)}
 
 .etape-icone{
-  width:clamp(2.1rem,8vw,3.1rem);
-  height:clamp(2.1rem,8vw,3.1rem);
+  width:clamp(1.95rem,7.4vw,3.1rem);
+  height:clamp(1.95rem,7.4vw,3.1rem);
   border:1px solid var(--encre-3);
   border-radius:50%;
   display:grid;place-items:center;
@@ -264,33 +268,36 @@ body{
 }
 .etape-icone svg{width:56%;height:56%}
 
-.etape-quoi{
-  font-size:clamp(.66rem,2.5vw,.78rem);
-  letter-spacing:.06em;
-  text-transform:uppercase;
-  color:var(--dim);
-  margin:.05rem 0 .2rem;
-}
+/* nowrap partout : ces quatre lignes doivent tenir d'un seul tenant,
+   c'est le corps qui s'adapte à la colonne, pas l'inverse. */
+.etape-heure,.etape-quoi,.etape-lieu,.etape-adresse{white-space:nowrap}
+
 .etape-heure{
   font-family:var(--caps);
   font-weight:700;
-  font-size:clamp(.84rem,3.2vw,1rem);
-  letter-spacing:.05em;
+  font-size:var(--te);
+  letter-spacing:.04em;
   color:var(--or);
   margin:0;
   line-height:1.1;
 }
+.etape-quoi{
+  font-size:calc(var(--te) * .82);
+  letter-spacing:.01em;
+  color:var(--dim);
+  margin:.12rem 0 .18rem;
+}
 .etape-lieu{
   font-family:var(--titre);
-  font-size:clamp(.84rem,3.2vw,1.02rem);
-  line-height:1.22;
+  font-size:var(--te);
+  line-height:1.2;
   margin:0;
 }
 .etape-adresse{
-  font-size:clamp(.72rem,2.7vw,.82rem);
-  line-height:1.35;
+  font-size:calc(var(--te) * .8);
+  line-height:1.3;
   color:var(--dim);
-  margin:.2rem 0 0;
+  margin:.18rem 0 0;
 }
 .etape-adresse a{color:inherit;text-decoration-color:var(--encre-3)}
 
@@ -328,7 +335,8 @@ body{
   color:var(--dim);
   max-width:27rem;
   /* le raccourci margin vient en dernier, sinon il écrase le margin-top */
-  margin:.78rem auto 0;
+  /* moitié du retrait du bas : le bouton descend vers la note */
+  margin:calc(var(--pied) * .5) auto 0;
 }
 .note strong{color:var(--ivoire);font-weight:400}
 
