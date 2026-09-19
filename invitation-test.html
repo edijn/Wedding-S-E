@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!-- ══════════════════════════════════════════════════════════
-     INVITATION — v5
-     Mélange de v3 et v4 : les réglages de v4 sur téléphone, ceux de v3
-     sur iPad et ordinateur. Obtenu en recalant la droite de hauteur sur
-     ces deux points plutôt qu'en rajoutant des paliers @media.
+     INVITATION — v9
+     Part de v8. L'écart entre le samedi et le dimanche s'ouvre et
+     devient la variable d'ajustement : exprimé en svh, il grandit sur
+     un écran haut et se resserre en premier sur un écran court.
      Ne rien modifier ici : toute évolution part d'une copie numérotée.
 
      Contenu : deux journées (samedi église + cocktail, dimanche
@@ -16,7 +16,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>v5 — Design — invitation</title>
+<title>v9 — Design — invitation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -160,7 +160,22 @@ body{
   top:0;left:0;right:0;
   z-index:2;
   text-align:center;
-  padding:clamp(.7rem,2.6vw,2.4rem) 1.2rem 0;
+  /* Le retrait au-dessus du titre doit AUGMENTER sur téléphone sans
+     rien changer au-delà. Un clamp ne sait que croître avec la
+     largeur ; on prend donc le plus grand de deux termes :
+
+       calc(1.965rem - 1.237vw)  décroît → gouverne le téléphone
+       clamp(.7rem,2.6vw,2.4rem) croît   → gouverne iPad et ordinateur
+
+     Ils se croisent à 820 px, la largeur d'un iPad : en dessous le
+     premier gagne, au-dessus le second.
+
+     v8 remonte encore le titre sur iPad et ordinateur : le terme
+     croissant descend à 1.5vw (plafond 1.5rem). Le terme décroissant
+     est repenté à chaque fois pour garder la valeur du téléphone
+     figée à 26 px à 440 px de large, ET pour que les deux courbes
+     continuent de se croiser pile à 820 px. */
+  padding:max(calc(2.616rem - 3.605vw), clamp(.7rem,1.5vw,1.5rem)) 1.2rem 0;
   pointer-events:none;
 }
 
@@ -310,9 +325,14 @@ body{
 @media(min-width:40rem){.ceremonie{max-width:36rem}}
 
 /* Deux jours empilés : chacun porte sa date puis ses moments. */
+/* L'écart entre les deux journées est désormais la variable
+   d'ajustement de la page. Il est exprimé en svh, pas en vw : il
+   grandit donc sur un écran haut et se resserre en premier sur un
+   écran court, avant qu'on touche à quoi que ce soit d'autre.
+   Le filet le sépare en deux moitiés égales, marge puis padding. */
 .jour + .jour{
-  margin-top:clamp(.55rem,2.2vw,.75rem);
-  padding-top:clamp(.55rem,2.2vw,.75rem);
+  margin-top:clamp(.45rem,1.6svh,1.4rem);
+  padding-top:clamp(.45rem,1.6svh,1.4rem);
   border-top:1px solid var(--encre-3);
 }
 
