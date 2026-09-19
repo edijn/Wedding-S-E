@@ -6,7 +6,7 @@
 
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec */
-const API = "";
+const API = "https://script.google.com/macros/s/AKfycbwx0InKKT5qVd_4SK0pp2BeJ_24RtDEme8j4cx3Nkv2T8Fqd4Ppo-BVxQO8Ws0S7u696Q/exec";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
