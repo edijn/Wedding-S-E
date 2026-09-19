@@ -2,21 +2,22 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Edi &amp; Sophie — 3 octobre 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sophie &amp; Edi — 21 août 2027</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <section id="porte">
   <div class="porte-bloc">
-    <h1 class="monogramme">Edi <span class="et">&amp;</span> Sophie</h1>
-    <p class="porte-sous">3 octobre 2026</p>
-    <p class="porte-consigne">Entrez le code à 4&nbsp;chiffres qui figure sur votre message.</p>
+    <h1 class="monogramme">Sophie<span class="et">&amp;</span>Edi</h1>
+    <p class="porte-sous"><span>Save the date</span></p>
+
+    <p class="porte-consigne">Entrez votre code</p>
 
     <div class="chiffres" id="chiffres">
       <input type="text" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Chiffre 1">
@@ -44,9 +45,8 @@ const detail = $("#porte-detail");
 const DEBUG = new URLSearchParams(location.search).has("debug");
 
 /* Appel serveur : pas d'en-tête personnalisé (Apps Script bloquerait),
-   délai maximum, et on lit le texte brut avant de tenter le JSON —
-   c'est ce qui permet de voir une page d'erreur Google au lieu de rester
-   bloqué sur « Vérification… ». */
+   délai maximum, et lecture du texte brut avant le JSON — c'est ce qui
+   permet de voir une page d'erreur Google au lieu de rester bloqué. */
 async function appel(charge, ms){
   const ctrl = new AbortController();
   const minuteur = setTimeout(() => ctrl.abort(), ms || 20000);
@@ -77,9 +77,8 @@ async function appel(charge, ms){
 /* réveille l'instance Apps Script pendant que l'invité tape */
 if (API) fetch(API, { method:"POST", body: JSON.stringify({ action:"ping" }) }).catch(() => {});
 
-/* Le code est redemandé dès que l'onglet est fermé : on ne garde rien
-   de durable. On nettoie au passage ce qu'une ancienne version avait pu
-   enregistrer sur l'appareil. */
+/* Le code est redemandé dès que l'onglet est fermé : rien de durable.
+   On nettoie au passage ce qu'une ancienne version aurait enregistré. */
 try {
   localStorage.removeItem("foyer-invite");
   localStorage.removeItem("code-invite");
@@ -128,12 +127,10 @@ async function verifier(){
     const r = await appel({ action:"ouvrir", code });
 
     if (r && r.ok && r.foyer && r.foyer.membres){
-      try {
-        sessionStorage.setItem("foyer-invite", JSON.stringify(r.foyer));
-      } catch(e){}
+      try { sessionStorage.setItem("foyer-invite", JSON.stringify(r.foyer)); } catch(e){}
       msg.textContent = "Bienvenue…";
       location.href = "invitation.html";
-      return;                                  // on ne réactive rien, on quitte la page
+      return;
     }
 
     if (r && r.ok){

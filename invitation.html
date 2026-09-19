@@ -2,24 +2,28 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Edi &amp; Sophie — 3 octobre 2026</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sophie &amp; Edi — 21 août 2027</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;1,6..96,400&family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;700&family=Playfair+Display:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <section id="invitation">
+
   <div class="photo-cadre">
-    <img id="photo" alt="Edi et Sophie">
-    <div class="photo-vide" id="photo-vide">VOTRE PHOTO ICI</div>
+    <img id="photo" alt="Sophie et Edi">
+    <div class="titre-photo">
+      <h1 class="noms">Sophie<span class="et">&amp;</span>Edi</h1>
+      <p class="sous-titre"><span>Save the date</span></p>
+    </div>
   </div>
 
   <div class="corps">
-    <h1 class="noms">Edi<span class="et">&amp;</span>Sophie</h1>
+
     <p class="accroche"><span id="ligne-invite"></span></p>
 
     <div class="ceremonie">
@@ -27,34 +31,32 @@
       <div class="etapes" id="etapes"></div>
     </div>
 
-    <p class="deja-repondu" id="deja-repondu"></p>
-    <button class="btn btn-large" id="ouvrir-rsvp">Répondre à l’invitation</button>
+    <div class="bloc-rsvp">
+      <p class="deja-repondu" id="deja-repondu"></p>
+      <button class="btn btn-large" id="ouvrir-rsvp">RSVP</button>
+      <p class="note">Merci de nous répondre avant le <strong id="date-limite"></strong>.</p>
+    </div>
 
-    <hr class="filet">
-    <p class="note">Merci de nous répondre avant le <strong id="date-limite"></strong>.</p>
-    <p class="sortie"><a href="#" id="changer-code">Saisir un autre code</a></p>
   </div>
 </section>
 
-<div class="voile" id="voile" role="dialog" aria-modal="true" aria-labelledby="rsvp-titre">
+
+<div class="voile" id="voile" role="dialog" aria-modal="true" aria-label="Répondre à l’invitation">
   <div class="tiroir">
 
     <div id="formulaire">
-      <h2 id="rsvp-titre">Serez-vous des nôtres&nbsp;?</h2>
-      <p class="intro" id="rsvp-intro"></p>
-
       <div class="choix">
         <label>
           <input type="radio" name="reponse" value="tous">
-          <span class="choix-txt">Nous serons tous là<small id="txt-tous"></small></span>
+          <span class="choix-txt">Nous serons tous là</span>
         </label>
         <label id="label-partiel">
           <input type="radio" name="reponse" value="partiel">
-          <span class="choix-txt">Une partie d’entre nous seulement<small>Vous cochez ensuite qui vient.</small></span>
+          <span class="choix-txt">Une partie d’entre nous seulement</span>
         </label>
         <label>
           <input type="radio" name="reponse" value="aucun">
-          <span class="choix-txt">Nous ne pourrons pas venir<small>Vous nous manquerez.</small></span>
+          <span class="choix-txt">Nous ne pourrons pas venir</span>
         </label>
       </div>
 
@@ -77,11 +79,13 @@
     </div>
 
     <div id="merci" style="display:none">
-      <div class="coche">✓</div>
-      <h2>C’est noté, merci&nbsp;!</h2>
-      <div class="recap" id="merci-recap"></div>
-      <p>Nous revenons vers vous très vite avec les derniers détails. Une erreur&nbsp;? Renvoyez simplement une nouvelle réponse.</p>
-      <button class="btn btn-fantome" id="fermer-merci">Fermer</button>
+      <div class="merci">
+        <div class="coche">✓</div>
+        <h2 id="merci-titre"></h2>
+        <div class="recap" id="merci-recap"></div>
+        <p id="merci-suite"></p>
+        <button class="btn btn-fantome" id="fermer-merci">Fermer</button>
+      </div>
     </div>
 
   </div>
@@ -92,7 +96,7 @@
 const $  = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 
-/* ── garde : sans code validé, on renvoie vers la page du code ── */
+/* ── garde : sans code validé, retour à la page du code ── */
 let foyer = null;
 try { foyer = JSON.parse(sessionStorage.getItem("foyer-invite") || "null"); } catch(e){}
 if (!foyer || !foyer.code || !foyer.membres || !foyer.membres.length){
@@ -118,36 +122,34 @@ async function appel(charge){
   } finally { clearTimeout(t); }
 }
 
-/* ── contenu fixe ── */
+/* ── icônes ── */
 const ICONES = {
   eglise: '<path d="M12 2.2v3"/><path d="M10.4 3.5h3.2"/><path d="M12 5.4 8.2 9.3V21h7.6V9.3z"/><path d="M8.2 11.6 4 14.1V21h4.2"/><path d="M15.8 11.6 20 14.1V21h-4.2"/><path d="M10.3 21v-3.1a1.7 1.7 0 0 1 3.4 0V21"/><circle cx="12" cy="12.6" r="1"/>',
-  chateau:'<path d="M3 21V7h2.2v2.1h3V7h2.3v2.1h3V7h2.3v2.1h3V7H21v14"/><path d="M2 21h20"/><path d="M10.1 21v-4.2a1.9 1.9 0 0 1 3.8 0V21"/><path d="M6.4 13.6h1.9"/><path d="M15.7 13.6h1.9"/>',
+  fete:   '<path d="M12 3.6c.55 4.6 1.5 5.55 6.1 6.1-4.6.55-5.55 1.5-6.1 6.1-.55-4.6-1.5-5.55-6.1-6.1 4.6-.55 5.55-1.5 6.1-6.1Z"/><path d="M6.4 14.9c.2 1.5.5 1.8 2 2-1.5.2-1.8.5-2 2-.2-1.5-.5-1.8-2-2 1.5-.2 1.8-.5 2-2Z"/><path d="M17.7 16.1c.15 1.1.35 1.35 1.45 1.5-1.1.15-1.3.4-1.45 1.5-.15-1.1-.35-1.35-1.45-1.5 1.1-.15 1.3-.4 1.45-1.5Z"/>',
   mairie: '<path d="M12 3 3 8h18z"/><path d="M5.2 9.4V18"/><path d="M9.7 9.4V18"/><path d="M14.3 9.4V18"/><path d="M18.8 9.4V18"/><path d="M3 18h18"/><path d="M2 21h20"/>',
-  verre:  '<path d="M6.4 3h11.2l-4.4 8.1V19"/><path d="M9.2 19h5.6"/><path d="M7.8 7.6h8.4"/>',
   table:  '<path d="M4.5 4.5h15"/><path d="M12 4.5V21"/><path d="M8.2 9.2c0 2.1-1.2 3.4-2.6 3.4S3 11.3 3 9.2"/><path d="M21 9.2c0 2.1-1.2 3.4-2.6 3.4s-2.6-1.3-2.6-3.4"/>'
 };
-const svg = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.15" '
+const svg = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" '
   + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + (ICONES[n] || ICONES.verre) + '</svg>';
+  + (ICONES[n] || ICONES.fete) + '</svg>';
 
 const img = $("#photo");
-img.addEventListener("load",  () => $("#photo-vide").style.display = "none");
 img.addEventListener("error", () => img.style.display = "none");
 img.src = PHOTO;
 
 $("#ceremonie-date").textContent = CEREMONIE.date;
 $("#date-limite").textContent = DATE_LIMITE;
 $("#etapes").innerHTML = CEREMONIE.etapes.map(e => {
-  const adr = e.maps
-    ? `<a href="${echap(e.maps)}" target="_blank" rel="noopener">${echap(e.adresse)}</a>`
-    : echap(e.adresse);
+  const ville = e.maps
+    ? `<a href="${echap(e.maps)}" target="_blank" rel="noopener">${echap(e.ville)}</a>`
+    : echap(e.ville);
   return `<div class="etape">
       <div class="etape-icone">${svg(e.icone)}</div>
       <div>
         <p class="etape-heure">${echap(e.heure)}</p>
-        ${e.quoi ? `<p class="etape-quoi">${echap(e.quoi)}</p>` : ""}
+        <p class="etape-quoi">${echap(e.quoi)}</p>
         <p class="etape-lieu">${echap(e.lieu)}</p>
-        ${e.adresse ? `<p class="etape-adresse">${adr}</p>` : ""}
+        <p class="etape-adresse">${ville}</p>
       </div>
     </div>`;
 }).join("");
@@ -156,14 +158,9 @@ $("#etapes").innerHTML = CEREMONIE.etapes.map(e => {
 const m = foyer.membres;
 
 $("#ligne-invite").innerHTML = m.length === 1
-  ? `<strong>${echap(m[0])}</strong>, nous serions très heureux de vous avoir à nos côtés le jour de notre mariage.`
-  : `Nous serions très heureux de vous avoir à nos côtés le jour de notre mariage — <strong>${echap(liste(m))}</strong>.`;
+  ? `<strong>${echap(m[0])}</strong>, nous serions très heureux de vous avoir à nos côtés pour célébrer notre mariage.`
+  : `<strong>${echap(liste(m))}</strong>, nous serions très heureux de vous avoir à nos côtés pour célébrer notre mariage.`;
 
-$("#rsvp-intro").textContent = m.length === 1
-  ? "Dites-nous simplement si vous pourrez venir."
-  : `Invitation au nom de : ${liste(m)}.`;
-
-$("#txt-tous").textContent = m.length === 1 ? "" : `Les ${m.length} personnes invitées.`;
 if (m.length === 1) $("#label-partiel").style.display = "none";
 
 $("#membres-liste").innerHTML = m.map((nom,i) =>
@@ -180,7 +177,7 @@ function majReponse(){
     $("#ouvrir-rsvp").textContent = "Modifier notre réponse";
   } else {
     d.classList.remove("actif");
-    $("#ouvrir-rsvp").textContent = "Répondre à l’invitation";
+    $("#ouvrir-rsvp").textContent = "RSVP";
   }
 }
 
@@ -219,12 +216,7 @@ function majBouton(){
   $("#envoyer").disabled = !r || (r === "partiel" && coches().length === 0);
 }
 
-$("#changer-code").addEventListener("click", e => {
-  e.preventDefault();
-  try { sessionStorage.removeItem("foyer-invite"); } catch(err){}
-  location.replace("index.html");
-});
-
+/* ── envoi ── */
 $("#envoyer").addEventListener("click", async () => {
   const r = choisie();
   if (!r) return;
@@ -248,19 +240,44 @@ $("#envoyer").addEventListener("click", async () => {
     foyer.reponse = r === "tous" ? "Tous présents" : r === "partiel" ? "Présence partielle" : "Absents";
     try { sessionStorage.setItem("foyer-invite", JSON.stringify(foyer)); } catch(e){}
     majReponse();
-
-    $("#formulaire").style.display = "none";
-    $("#merci").style.display = "block";
-    $("#merci-recap").textContent =
-        r === "aucun" ? "Vous ne pourrez pas être là."
-      : presents.length === 1 ? presents[0] + " sera présent·e."
-      : liste(presents) + " seront présents.";
+    afficherMerci(r, presents);
   } catch(e){
     btn.disabled = false;
     btn.textContent = "Envoyer notre réponse";
     $("#rsvp-erreur").textContent = "L’envoi a échoué. Vérifiez votre connexion et réessayez.";
   }
 });
+
+/* Trois écrans de confirmation selon la réponse : le ton suit le sens
+   du message, et l'absence ne reçoit pas de promesse de détails. */
+function afficherMerci(r, presents){
+  const titre = $("#merci-titre");
+  const recap = $("#merci-recap");
+  const suite = $("#merci-suite");
+
+  if (r === "aucun"){
+    titre.innerHTML = "C’est noté, merci&nbsp;!";
+    recap.innerHTML = 'Vous nous manquerez <span class="emoji">🥺</span>';
+    recap.style.display = "block";
+    suite.style.display = "none";
+  } else {
+    titre.innerHTML = "Yeahhhhh&nbsp;! On a hâte&nbsp;!";
+    suite.textContent = "Nous revenons vers vous très vite avec les derniers détails.";
+    suite.style.display = "block";
+
+    if (r === "partiel"){
+      recap.textContent = presents.length === 1
+        ? presents[0] + " sera présent·e."
+        : liste(presents) + " seront présents.";
+      recap.style.display = "block";
+    } else {
+      recap.style.display = "none";
+    }
+  }
+
+  $("#formulaire").style.display = "none";
+  $("#merci").style.display = "block";
+}
 </script>
 </body>
 </html>
