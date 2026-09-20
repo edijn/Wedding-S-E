@@ -3,286 +3,544 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Suivi des réponses</title>
+<title>Admin — Sophie &amp; Edi</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --encre:#0E1220; --encre-2:#171D30; --encre-3:#232A42;
   --or:#E8B667; --ivoire:#F2EDE6; --dim:#B3AFA8;
-  --vert:#8FBF9F; --ambre:#E8B667; --gris:#6C7590; --erreur:#E98A7B;
-  --sans:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --vert:#5FCE8F; --rouge:#E88A7D;
 }
 *,*::before,*::after{box-sizing:border-box}
 body{
   margin:0;background:var(--encre);color:var(--ivoire);
-  font-family:var(--sans);font-weight:300;
-  -webkit-font-smoothing:antialiased;
+  font-family:"Lato",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-weight:300;line-height:1.55;
 }
-:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+.enveloppe{max-width:74rem;margin:0 auto;padding:2rem 1.2rem 4rem}
 
-/* ── écran mot de passe ── */
-#porte{min-height:100svh;display:grid;place-items:center;padding:2rem 1.5rem}
-#porte form{width:100%;max-width:21rem;text-align:center}
-#porte h1{font-size:1.1rem;font-weight:500;letter-spacing:.02em;margin:0 0 .4rem}
-#porte p.sous{font-size:.88rem;color:var(--dim);margin:0 0 2rem}
-input[type=password]{
-  width:100%;padding:.9rem 1rem;
-  background:var(--encre-2);border:1px solid var(--encre-3);border-radius:3px;
-  color:var(--ivoire);font-family:var(--sans);font-size:1rem;margin-bottom:.8rem;
+h1{
+  font-family:"Cinzel",serif;font-weight:700;
+  font-size:1.5rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--or);margin:0 0 1.6rem;
 }
-input[type=password]:focus{border-color:var(--or);outline:none}
+h2{
+  font-family:"Cinzel",serif;font-weight:400;
+  font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);margin:2.4rem 0 .9rem;
+}
+
+input,select,button,textarea{font:inherit}
+input,select{
+  background:var(--encre-2);color:var(--ivoire);
+  border:1px solid var(--encre-3);border-radius:3px;
+  padding:.55rem .7rem;width:100%;
+}
+input:focus,select:focus{outline:none;border-color:var(--or)}
+
 .btn{
-  font-family:var(--sans);font-size:.92rem;font-weight:500;
-  padding:.9rem 1.6rem;border-radius:3px;
-  border:1px solid var(--or);background:var(--or);color:var(--encre);cursor:pointer;
+  background:var(--or);color:var(--encre);border:1px solid var(--or);
+  border-radius:3px;padding:.58rem 1.3rem;cursor:pointer;
+  letter-spacing:.04em;white-space:nowrap;
 }
 .btn:hover{background:#F0C87E}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.btn-plat{
-  background:transparent;color:var(--dim);border-color:var(--encre-3);
-  font-size:.85rem;padding:.55rem 1rem;
-}
-.btn-plat:hover{color:var(--ivoire);border-color:var(--dim);background:transparent}
-#porte-err{min-height:1.2rem;font-size:.85rem;color:var(--erreur);margin:.6rem 0 0}
+.btn:disabled{opacity:.5;cursor:default}
+.btn-fantome{background:none;color:var(--dim);border-color:var(--encre-3)}
+.btn-fantome:hover{background:var(--encre-2);color:var(--ivoire)}
+.btn-petit{padding:.28rem .6rem;font-size:.8rem}
 
-/* ── tableau de bord ── */
-#bord{display:none;padding:clamp(1rem,3.5vw,2.5rem);max-width:78rem;margin:0 auto}
-.entete{
-  display:flex;flex-wrap:wrap;gap:.8rem;
-  align-items:baseline;justify-content:space-between;margin-bottom:1.8rem;
-}
-.entete h1{font-size:1.25rem;font-weight:500;margin:0}
-.entete .actions{display:flex;gap:.5rem}
+/* ── connexion ── */
+.connexion{max-width:21rem;margin:16vh auto 0;text-align:center}
+.connexion input{text-align:center;margin-bottom:.9rem}
 
-.cartes{
-  display:grid;gap:.7rem;margin-bottom:1.8rem;
-  grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));
+/* ── compteurs ── */
+.stats{
+  display:grid;gap:.7rem;margin-bottom:.6rem;
+  grid-template-columns:repeat(auto-fit,minmax(8rem,1fr));
 }
-.carte{background:var(--encre-2);border:1px solid var(--encre-3);border-radius:4px;padding:1rem}
-.carte b{display:block;font-size:1.75rem;font-weight:600;line-height:1.1;margin-bottom:.25rem}
-.carte span{font-size:.78rem;color:var(--dim);line-height:1.35;display:block}
-.carte.vert b{color:var(--vert)}
-.carte.ambre b{color:var(--ambre)}
-.carte.gris b{color:var(--gris)}
-
-.filtres{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
-.filtre{
-  font-family:var(--sans);font-size:.83rem;
-  padding:.45rem .9rem;border-radius:99px;cursor:pointer;
-  background:transparent;color:var(--dim);border:1px solid var(--encre-3);
+.stat{
+  background:var(--encre-2);border:1px solid var(--encre-3);
+  border-radius:4px;padding:.8rem .9rem;
 }
-.filtre:hover{color:var(--ivoire)}
-.filtre.on{background:var(--encre-3);color:var(--ivoire);border-color:var(--encre-3)}
-
-#recherche{
-  width:100%;max-width:20rem;padding:.6rem .85rem;margin-bottom:1rem;
-  background:var(--encre-2);border:1px solid var(--encre-3);border-radius:3px;
-  color:var(--ivoire);font-family:var(--sans);font-size:.9rem;
+.stat b{
+  display:block;font-family:"Cinzel",serif;font-weight:700;
+  font-size:1.5rem;color:var(--or);line-height:1.1;
 }
-#recherche:focus{border-color:var(--or);outline:none}
+.stat span{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 
-.tableau{overflow-x:auto;border:1px solid var(--encre-3);border-radius:4px}
-table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:52rem}
+/* ── tableau ── */
+.cadre{overflow-x:auto;border:1px solid var(--encre-3);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:.88rem;min-width:56rem}
+th,td{padding:.55rem .7rem;text-align:left;white-space:nowrap}
 th{
-  text-align:left;font-weight:500;font-size:.76rem;color:var(--dim);
-  padding:.8rem .9rem;background:var(--encre-2);
-  border-bottom:1px solid var(--encre-3);white-space:nowrap;
+  background:var(--encre-2);color:var(--dim);
+  font-weight:400;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;
+  position:sticky;top:0;
 }
-td{padding:.8rem .9rem;border-bottom:1px solid rgba(35,42,66,.6);vertical-align:top}
-tr:last-child td{border-bottom:0}
-tr:hover td{background:rgba(35,42,66,.28)}
-td.nom{font-weight:500}
-td.dim{color:var(--dim)}
-td.msg{max-width:16rem;color:var(--dim);font-size:.83rem}
-
+tbody tr{border-top:1px solid var(--encre-3)}
+tbody tr:hover{background:rgba(35,42,66,.4)}
+td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
 .pastille{
-  display:inline-block;padding:.22rem .6rem;border-radius:99px;
-  font-size:.75rem;white-space:nowrap;
+  display:inline-block;padding:.1rem .5rem;border-radius:999px;
+  font-size:.74rem;letter-spacing:.04em;
 }
-.pastille.repondu{background:rgba(143,191,159,.14);color:var(--vert)}
-.pastille.ouvert{background:rgba(232,182,103,.14);color:var(--ambre)}
-.pastille.silence{background:rgba(108,117,144,.18);color:#96A0BC}
+.p-oui{background:rgba(95,206,143,.14);color:var(--vert)}
+.p-non{background:rgba(232,138,125,.14);color:var(--rouge)}
+.p-attente{background:rgba(179,175,168,.12);color:var(--dim)}
+.code{font-family:"Cinzel",serif;font-weight:700;color:var(--or);letter-spacing:.06em}
 
-.vide{padding:2.5rem 1rem;text-align:center;color:var(--dim);font-size:.9rem}
+/* ── formulaires ── */
+.grille{
+  display:grid;gap:.7rem;align-items:end;
+  grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));
+}
+.champ label{
+  display:block;font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:.3rem;
+}
+.aide{font-size:.82rem;color:var(--dim);margin:.5rem 0 1rem}
+.message{margin:.9rem 0 0;font-size:.88rem;min-height:1.3rem}
+.message.ok{color:var(--vert)}
+.message.ko{color:var(--rouge)}
+
+.zone-import{
+  border:1px dashed var(--encre-3);border-radius:4px;
+  padding:1.2rem;text-align:center;
+}
+.apercu{max-height:16rem;overflow:auto;margin-top:1rem}
+[hidden]{display:none !important}
 </style>
 </head>
 <body>
 
-<section id="porte">
-  <form id="form-porte">
-    <h1>Suivi des réponses</h1>
-    <p class="sous">Edi &amp; Sophie — 3 octobre 2026</p>
-    <input type="password" id="mdp" placeholder="Mot de passe" autocomplete="current-password" required>
-    <button class="btn" type="submit" id="entrer" style="width:100%">Ouvrir le suivi</button>
-    <p id="porte-err" role="alert"></p>
-  </form>
-</section>
+<!-- ─────────── CONNEXION ─────────── -->
+<div class="connexion" id="connexion">
+  <h1>Admin</h1>
+  <input type="password" id="mdp" placeholder="Mot de passe" autocomplete="current-password">
+  <button class="btn" id="entrer" style="width:100%">Entrer</button>
+  <p class="message ko" id="msg-connexion"></p>
+</div>
 
-<section id="bord">
-  <div class="entete">
-    <h1>Suivi des réponses</h1>
-    <div class="actions">
-      <button class="btn-plat btn" id="rafraichir">Actualiser</button>
-      <button class="btn-plat btn" id="csv">Export CSV</button>
-      <button class="btn-plat btn" id="sortir">Quitter</button>
+<!-- ─────────── TABLEAU DE BORD ─────────── -->
+<div class="enveloppe" id="bord" hidden>
+  <h1>Sophie &amp; Edi — suivi des invités</h1>
+
+  <div class="stats" id="stats"></div>
+  <p class="aide">Âge et Alcool se remplissent dans le Google Sheet et
+     ne sont visibles que sur cette page.</p>
+
+  <h2>Invités</h2>
+  <div class="grille" style="margin-bottom:.9rem">
+    <div class="champ">
+      <label for="filtre">Rechercher</label>
+      <input id="filtre" placeholder="Prénom, foyer, code…">
+    </div>
+    <div class="champ">
+      <label for="filtre-etat">État</label>
+      <select id="filtre-etat">
+        <option value="">Tous</option>
+        <option value="present">Présents</option>
+        <option value="absent">Absents</option>
+        <option value="attente">Sans réponse</option>
+        <option value="brunch">Au brunch</option>
+      </select>
+    </div>
+    <div class="champ">
+      <label>&nbsp;</label>
+      <button class="btn btn-fantome" id="recharger">Recharger</button>
+    </div>
+    <div class="champ">
+      <label>&nbsp;</label>
+      <button class="btn btn-fantome" id="exporter">Exporter en CSV</button>
     </div>
   </div>
 
-  <div class="cartes" id="cartes"></div>
-
-  <div class="filtres" id="filtres">
-    <button class="filtre on" data-f="tous">Tous</button>
-    <button class="filtre" data-f="repondu">Ont répondu</button>
-    <button class="filtre" data-f="ouvert">Ouvert, sans réponse</button>
-    <button class="filtre" data-f="silence">Lien jamais ouvert</button>
-  </div>
-
-  <input type="search" id="recherche" placeholder="Chercher un foyer ou un prénom…">
-
-  <div class="tableau">
+  <div class="cadre">
     <table>
       <thead>
         <tr>
-          <th>Foyer</th><th>Code</th><th>Invités</th><th>État</th>
-          <th>Vu le</th><th>Réponse</th><th>Présents</th><th>Répondu le</th><th>Message</th>
+          <th>Foyer</th><th>Code</th><th>Prénom</th><th>Nom</th>
+          <th>Langue</th><th>Âge</th><th>Alcool</th>
+          <th>Réponse</th><th>Brunch</th><th>Mot</th><th></th>
         </tr>
       </thead>
       <tbody id="corps"></tbody>
     </table>
   </div>
-  <div class="vide" id="vide" style="display:none">Aucun foyer ne correspond.</div>
-</section>
 
+  <!-- ─────────── AJOUT ─────────── -->
+  <h2>Ajouter un invité</h2>
+  <p class="aide">Laisse le code vide : un invité rejoignant un foyer
+     existant reçoit automatiquement le code de ce foyer. Écris le nom
+     du foyer <em>exactement</em> comme dans le tableau pour les relier.</p>
+  <div class="grille">
+    <div class="champ"><label for="a-foyer">Foyer</label>
+      <input id="a-foyer" list="foyers"><datalist id="foyers"></datalist></div>
+    <div class="champ"><label for="a-prenom">Prénom</label><input id="a-prenom"></div>
+    <div class="champ"><label for="a-nom">Nom</label><input id="a-nom"></div>
+    <div class="champ"><label for="a-langue">Langue</label>
+      <select id="a-langue"><option value="fr">fr</option><option value="en">en</option></select></div>
+    <div class="champ"><label for="a-age">Âge</label>
+      <select id="a-age"><option>Adulte</option><option>Enfant</option><option>Bébé</option></select></div>
+    <div class="champ"><label for="a-alcool">Alcool</label>
+      <select id="a-alcool"><option>Non</option><option>Oui</option></select></div>
+    <div class="champ"><label for="a-code">Code (facultatif)</label>
+      <input id="a-code" inputmode="numeric" maxlength="4" placeholder="auto"></div>
+    <div class="champ"><label>&nbsp;</label>
+      <button class="btn" id="ajouter">Ajouter</button></div>
+  </div>
+  <p class="message" id="msg-ajout"></p>
+
+  <!-- ─────────── IMPORT ─────────── -->
+  <h2>Importer un fichier Excel</h2>
+  <p class="aide">Colonnes attendues, en première ligne, dans n'importe
+     quel ordre : <strong>Foyer, Prénom, Nom, Langue, Âge, Alcool</strong>,
+     et <strong>Code</strong> si tu veux l'imposer. Les lignes partageant
+     le même Foyer reçoivent le même code. Un invité déjà présent est
+     ignoré, jamais dupliqué. Formats acceptés : .xlsx, .xls, .csv.</p>
+
+  <div class="zone-import">
+    <input type="file" id="fichier" accept=".xlsx,.xls,.csv" style="max-width:22rem;margin:0 auto">
+  </div>
+
+  <div class="apercu cadre" id="apercu" hidden>
+    <table><thead><tr id="apercu-tete"></tr></thead><tbody id="apercu-corps"></tbody></table>
+  </div>
+
+  <div id="bloc-import" hidden style="margin-top:.9rem">
+    <button class="btn" id="importer">Importer <span id="nb-import"></span></button>
+    <button class="btn btn-fantome" id="annuler-import">Annuler</button>
+  </div>
+  <p class="message" id="msg-import"></p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="config.js"></script>
 <script>
-/* L'URL du service vient de config.js.
-   Le mot de passe, lui, n'est pas dans ce fichier : il est vérifié
-   côté serveur, donc il reste invisible dans le code source. */
+(function(){
+  "use strict";
 
-let donnees = null, filtre = "tous", mdp = "";
+  var mdp = "", donnees = [], aImporter = [];
 
-const $ = s => document.querySelector(s);
-const echap = s => String(s).replace(/[&<>"']/g, c =>
-  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-
-const LIBELLE = { repondu:"A répondu", ouvert:"Ouvert, sans réponse", silence:"Jamais ouvert" };
-
-async function charger(motDePasse){
-  const r = await fetch(API, { method:"POST", body: JSON.stringify({ action:"admin", motDePasse }) });
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
-}
-
-$("#form-porte").addEventListener("submit", async e => {
-  e.preventDefault();
-  const btn = $("#entrer"), err = $("#porte-err");
-  if (!API){ err.textContent = "API non configurée dans ce fichier."; return; }
-  btn.disabled = true; btn.textContent = "Vérification…"; err.textContent = "";
-  try {
-    const rep = await charger($("#mdp").value);
-    if (!rep.ok){ err.textContent = "Mot de passe incorrect."; return; }
-    mdp = $("#mdp").value;
-    try { sessionStorage.setItem("mdp-admin", mdp); } catch(e){}
-    donnees = rep;
-    $("#porte").style.display = "none";
-    $("#bord").style.display = "block";
-    rendre();
-  } catch(e){
-    err.textContent = "Connexion impossible.";
-  } finally {
-    btn.disabled = false; btn.textContent = "Ouvrir le suivi";
-    $("#mdp").value = "";
+  function $(id){ return document.getElementById(id); }
+  function echap(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   }
-});
+  function appel(charge){
+    return fetch(API, {
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify(charge)
+    }).then(function(r){ return r.json(); });
+  }
+  function dire(id, texte, ok){
+    var e = $(id);
+    e.textContent = texte;
+    e.className = "message " + (ok ? "ok" : "ko");
+  }
 
-/* session déjà ouverte dans cet onglet */
-(async () => {
-  let m = null;
-  try { m = sessionStorage.getItem("mdp-admin"); } catch(e){}
-  if (!m || !API) return;
-  try {
-    const rep = await charger(m);
-    if (rep.ok){
-      mdp = m; donnees = rep;
-      $("#porte").style.display = "none";
-      $("#bord").style.display = "block";
-      rendre();
-    }
-  } catch(e){}
+  /* ─────────── connexion ─────────── */
+
+  $("entrer").addEventListener("click", entrer);
+  $("mdp").addEventListener("keydown", function(e){ if (e.key === "Enter") entrer(); });
+
+  function entrer(){
+    var essai = $("mdp").value;
+    if (!essai) return;
+    $("entrer").disabled = true;
+    appel({ action:"admin", motDePasse:essai })
+      .then(function(d){
+        $("entrer").disabled = false;
+        if (!d || !d.ok){
+          $("msg-connexion").textContent = (d && d.erreur) || "Échec";
+          return;
+        }
+        mdp = essai;
+        sessionStorage.setItem("admin", essai);
+        $("connexion").hidden = true;
+        $("bord").hidden = false;
+        afficher(d);
+      })
+      .catch(function(){
+        $("entrer").disabled = false;
+        $("msg-connexion").textContent = "Connexion impossible.";
+      });
+  }
+
+  /* Session déjà ouverte dans cet onglet. */
+  var garde = sessionStorage.getItem("admin");
+  if (garde){ $("mdp").value = garde; entrer(); }
+
+  /* ─────────── affichage ─────────── */
+
+  function recharger(){
+    return appel({ action:"admin", motDePasse:mdp }).then(function(d){
+      if (d && d.ok) afficher(d);
+      return d;
+    });
+  }
+  $("recharger").addEventListener("click", recharger);
+
+  function afficher(d){
+    donnees = d.invites || [];
+    var s = d.stats || {};
+
+    $("stats").innerHTML = [
+      ["Invités", s.invites], ["Foyers", s.foyers],
+      ["Présents", s.presents], ["Absents", s.absents],
+      ["Sans réponse", s.attente], ["Au brunch", s.brunch],
+      ["Adultes", s.adultes], ["Enfants", s.enfants], ["Bébés", s.bebes],
+      ["Boivent", s.alcool]
+    ].map(function(x){
+      return '<div class="stat"><b>' + (x[1] || 0) + '</b><span>'
+           + x[0] + '</span></div>';
+    }).join("");
+
+    var foyers = {};
+    donnees.forEach(function(i){ foyers[i.foyer] = true; });
+    $("foyers").innerHTML = Object.keys(foyers).sort().map(function(f){
+      return '<option value="' + echap(f) + '">';
+    }).join("");
+
+    dessinerTable();
+  }
+
+  $("filtre").addEventListener("input", dessinerTable);
+  $("filtre-etat").addEventListener("change", dessinerTable);
+
+  function filtrees(){
+    var q = $("filtre").value.trim().toLowerCase();
+    var e = $("filtre-etat").value;
+    return donnees.filter(function(i){
+      if (q){
+        var foin = [i.foyer, i.prenom, i.nom, i.code].join(" ").toLowerCase();
+        if (foin.indexOf(q) < 0) return false;
+      }
+      if (e === "present") return i.repondu && i.present;
+      if (e === "absent")  return i.repondu && !i.present;
+      if (e === "attente") return !i.repondu;
+      if (e === "brunch")  return !!i.brunch;
+      return true;
+    });
+  }
+
+  function dessinerTable(){
+    var lignes = filtrees();
+    $("corps").innerHTML = lignes.length ? lignes.map(function(i){
+      var etat = !i.repondu
+        ? '<span class="pastille p-attente">en attente</span>'
+        : (i.present ? '<span class="pastille p-oui">présent</span>'
+                     : '<span class="pastille p-non">absent</span>');
+      return '<tr>'
+        + '<td>' + echap(i.foyer) + '</td>'
+        + '<td class="code">' + echap(i.code) + '</td>'
+        + '<td>' + echap(i.prenom) + '</td>'
+        + '<td>' + echap(i.nom) + '</td>'
+        + '<td>' + echap(i.langue) + '</td>'
+        + '<td>' + echap(i.age) + '</td>'
+        + '<td>' + echap(i.alcool) + '</td>'
+        + '<td>' + etat + '</td>'
+        + '<td>' + (i.brunch ? '<span class="pastille p-oui">oui</span>' : '—') + '</td>'
+        + '<td class="mot">' + echap(i.mot) + '</td>'
+        + '<td><button class="btn btn-fantome btn-petit" data-cle="'
+        + echap(i.cle) + '">Supprimer</button></td>'
+        + '</tr>';
+    }).join("") : '<tr><td colspan="11" style="color:var(--dim)">Aucun invité.</td></tr>';
+
+    $("corps").querySelectorAll("button[data-cle]").forEach(function(b){
+      b.addEventListener("click", function(){ supprimer(b.getAttribute("data-cle")); });
+    });
+  }
+
+  function supprimer(cle){
+    var i = donnees.filter(function(x){ return x.cle === cle; })[0];
+    if (!i) return;
+    if (!confirm("Supprimer " + i.prenom + " " + i.nom + " ?\n\n"
+               + "Cette action est définitive.")) return;
+
+    appel({ action:"supprimer", motDePasse:mdp, cle:cle })
+      .then(function(d){
+        if (d && d.ok) recharger();
+        else alert((d && d.erreur) || "Échec de la suppression.");
+      })
+      .catch(function(){ alert("Connexion impossible."); });
+  }
+
+  /* ─────────── ajout ─────────── */
+
+  $("ajouter").addEventListener("click", function(){
+    var prenom = $("a-prenom").value.trim();
+    if (!prenom){ dire("msg-ajout", "Le prénom est obligatoire.", false); return; }
+
+    $("ajouter").disabled = true;
+    appel({
+      action:"ajouter", motDePasse:mdp,
+      foyer:  $("a-foyer").value.trim(),
+      prenom: prenom,
+      nom:    $("a-nom").value.trim(),
+      langue: $("a-langue").value,
+      age:    $("a-age").value,
+      alcool: $("a-alcool").value,
+      code:   $("a-code").value.trim()
+    })
+    .then(function(d){
+      $("ajouter").disabled = false;
+      if (!d || !d.ok){ dire("msg-ajout", (d && d.erreur) || "Échec", false); return; }
+      dire("msg-ajout", "Ajouté — code du foyer : " + d.code, true);
+      ["a-prenom", "a-nom", "a-code"].forEach(function(id){ $(id).value = ""; });
+      recharger();
+    })
+    .catch(function(){
+      $("ajouter").disabled = false;
+      dire("msg-ajout", "Connexion impossible.", false);
+    });
+  });
+
+  /* ─────────── import Excel ───────────
+     Le fichier est lu ICI, dans le navigateur, par SheetJS. Apps
+     Script ne reçoit qu'un tableau déjà décodé : il n'a pas à
+     comprendre le format .xlsx, et rien n'est envoyé avant que tu
+     aies vu l'aperçu. */
+
+  var ENTETES = {
+    foyer:  ["foyer", "famille", "household", "family"],
+    prenom: ["prénom", "prenom", "first name", "firstname"],
+    nom:    ["nom", "last name", "lastname", "surname"],
+    langue: ["langue", "language", "lang"],
+    age:    ["âge", "age"],
+    alcool: ["alcool", "alcohol", "boit"],
+    code:   ["code"]
+  };
+
+  function champDe(entete){
+    var e = String(entete || "").trim().toLowerCase();
+    for (var k in ENTETES) if (ENTETES[k].indexOf(e) >= 0) return k;
+    return null;
+  }
+
+  $("fichier").addEventListener("change", function(){
+    var f = $("fichier").files[0];
+    if (!f) return;
+    dire("msg-import", "", true);
+
+    var lecteur = new FileReader();
+    lecteur.onload = function(e){
+      try {
+        var classeur = XLSX.read(e.target.result, { type:"array" });
+        var onglet = classeur.Sheets[classeur.SheetNames[0]];
+        var brut = XLSX.utils.sheet_to_json(onglet, { header:1, blankrows:false });
+        if (brut.length < 2) throw new Error("fichier vide");
+
+        var colonnes = brut[0].map(champDe);
+        if (colonnes.indexOf("prenom") < 0)
+          throw new Error("colonne « Prénom » introuvable");
+
+        aImporter = [];
+        for (var i = 1; i < brut.length; i++){
+          var ligne = {}, vide = true;
+          colonnes.forEach(function(champ, j){
+            if (!champ) return;
+            var v = brut[i][j];
+            if (v != null && String(v).trim()){ ligne[champ] = String(v).trim(); vide = false; }
+          });
+          if (!vide && ligne.prenom) aImporter.push(ligne);
+        }
+
+        if (!aImporter.length) throw new Error("aucune ligne exploitable");
+        apercu();
+      } catch (err){
+        aImporter = [];
+        $("apercu").hidden = true;
+        $("bloc-import").hidden = true;
+        dire("msg-import", "Lecture impossible : " + err.message, false);
+      }
+    };
+    lecteur.readAsArrayBuffer(f);
+  });
+
+  function apercu(){
+    var cles = ["foyer", "prenom", "nom", "langue", "age", "alcool", "code"];
+    $("apercu-tete").innerHTML = cles.map(function(c){
+      return "<th>" + c + "</th>";
+    }).join("");
+    $("apercu-corps").innerHTML = aImporter.slice(0, 40).map(function(l){
+      return "<tr>" + cles.map(function(c){
+        return "<td>" + echap(l[c] || "—") + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+
+    $("apercu").hidden = false;
+    $("bloc-import").hidden = false;
+    $("nb-import").textContent = "(" + aImporter.length + ")";
+    dire("msg-import", aImporter.length + " ligne(s) lue(s). Rien n'est encore envoyé.", true);
+  }
+
+  $("annuler-import").addEventListener("click", function(){
+    aImporter = [];
+    $("fichier").value = "";
+    $("apercu").hidden = true;
+    $("bloc-import").hidden = true;
+    dire("msg-import", "", true);
+  });
+
+  $("importer").addEventListener("click", function(){
+    if (!aImporter.length) return;
+    $("importer").disabled = true;
+    dire("msg-import", "Import en cours…", true);
+
+    appel({ action:"importer", motDePasse:mdp, lignes:aImporter })
+      .then(function(d){
+        $("importer").disabled = false;
+        if (!d || !d.ok){ dire("msg-import", (d && d.erreur) || "Échec", false); return; }
+
+        var m = d.ajoutes + " invité(s) ajouté(s).";
+        if (d.ignores && d.ignores.length)
+          m += " " + d.ignores.length + " déjà présent(s), ignoré(s).";
+        if (d.erreurs && d.erreurs.length)
+          m += " " + d.erreurs.length + " ligne(s) en erreur : " + d.erreurs.join(" ; ");
+        dire("msg-import", m, true);
+
+        aImporter = [];
+        $("fichier").value = "";
+        $("apercu").hidden = true;
+        $("bloc-import").hidden = true;
+        recharger();
+      })
+      .catch(function(){
+        $("importer").disabled = false;
+        dire("msg-import", "Connexion impossible.", false);
+      });
+  });
+
+  /* ─────────── export ─────────── */
+
+  $("exporter").addEventListener("click", function(){
+    var cles = ["foyer","code","prenom","nom","langue","age","alcool",
+                "repondu","present","brunch","mot"];
+    var lignes = [cles.join(";")].concat(filtrees().map(function(i){
+      return cles.map(function(c){
+        var v = i[c];
+        if (v === true) v = "Oui";
+        if (v === false) v = "Non";
+        if (v == null) v = "";
+        return '"' + String(v).replace(/"/g, '""') + '"';
+      }).join(";");
+    }));
+
+    var lien = document.createElement("a");
+    lien.href = URL.createObjectURL(
+      new Blob(["\uFEFF" + lignes.join("\n")], { type:"text/csv;charset=utf-8" }));
+    lien.download = "invites.csv";
+    lien.click();
+    URL.revokeObjectURL(lien.href);
+  });
 })();
-
-$("#rafraichir").addEventListener("click", async () => {
-  const b = $("#rafraichir"); b.disabled = true; b.textContent = "…";
-  try { const r = await charger(mdp); if (r.ok){ donnees = r; rendre(); } } catch(e){}
-  b.disabled = false; b.textContent = "Actualiser";
-});
-
-$("#sortir").addEventListener("click", () => {
-  try { sessionStorage.removeItem("mdp-admin"); } catch(e){}
-  location.reload();
-});
-
-document.querySelectorAll(".filtre").forEach(b => {
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".filtre").forEach(x => x.classList.remove("on"));
-    b.classList.add("on");
-    filtre = b.dataset.f;
-    rendre();
-  });
-});
-$("#recherche").addEventListener("input", rendre);
-
-function visibles(){
-  const q = $("#recherche").value.trim().toLowerCase();
-  return donnees.foyers.filter(f => {
-    if (filtre !== "tous" && f.etat !== filtre) return false;
-    if (!q) return true;
-    return (f.nom + " " + f.membres + " " + f.code).toLowerCase().includes(q);
-  });
-}
-
-function rendre(){
-  const t = donnees.total;
-  $("#cartes").innerHTML = `
-    <div class="carte vert"><b>${t.presents}</b><span>personnes confirmées présentes</span></div>
-    <div class="carte"><b>${t.repondu} / ${t.foyers}</b><span>foyers ayant répondu</span></div>
-    <div class="carte ambre"><b>${t.ouvert}</b><span>ont ouvert, sans répondre</span></div>
-    <div class="carte gris"><b>${t.silence}</b><span>n’ont jamais ouvert le lien</span></div>
-    <div class="carte"><b>${t.absents}</b><span>personnes déclarées absentes</span></div>
-    <div class="carte"><b>${t.invites}</b><span>personnes invitées au total</span></div>`;
-
-  const l = visibles();
-  $("#vide").style.display = l.length ? "none" : "block";
-  $("#corps").innerHTML = l.map(f => `
-    <tr>
-      <td class="nom">${echap(f.nom)}</td>
-      <td class="dim">${echap(f.code)}</td>
-      <td class="dim">${echap(f.membres)}</td>
-      <td><span class="pastille ${f.etat}">${LIBELLE[f.etat]}</span></td>
-      <td class="dim">${echap(f.vuLe) || "—"}</td>
-      <td>${echap(f.repondu) || "—"}</td>
-      <td class="dim">${echap(f.presents) || "—"}</td>
-      <td class="dim">${echap(f.reponduLe) || "—"}</td>
-      <td class="msg">${echap(f.message) || ""}</td>
-    </tr>`).join("");
-}
-
-$("#csv").addEventListener("click", () => {
-  const cols = ["nom","code","membres","etat","vuLe","repondu","presents","nbPresents","reponduLe","message"];
-  const entete = ["Foyer","Code","Invités","État","Vu le","Réponse","Présents","Nb","Répondu le","Message"];
-  const guil = v => '"' + String(v == null ? "" : v).replace(/"/g,'""') + '"';
-  const csv = [entete.map(guil).join(",")]
-    .concat(visibles().map(f => cols.map(c => guil(c === "etat" ? LIBELLE[f.etat] : f[c])).join(",")))
-    .join("\r\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(["\ufeff" + csv], { type:"text/csv;charset=utf-8" }));
-  a.download = "reponses-mariage.csv";
-  a.click();
-  URL.revokeObjectURL(a.href);
-});
 </script>
+
 </body>
 </html>

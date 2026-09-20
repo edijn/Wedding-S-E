@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Sophie &amp; Edi — 21 août 2027</title>
+<title>Sophie &amp; Edi</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,272 +12,384 @@
 </head>
 <body>
 
-<section id="invitation">
+<div class="attente" id="attente">…</div>
+
+<section id="invitation" hidden>
 
   <div class="photo-cadre">
-    <img id="photo" alt="Sophie et Edi">
+    <img class="photo" id="photo" alt="" fetchpriority="high" decoding="async">
+
     <div class="titre-photo">
       <h1 class="noms">Sophie<span class="et">&amp;</span>Edi</h1>
-      <p class="sous-titre"><span>Save the date</span></p>
+      <p class="sous-titre"><span id="save">Save the date</span></p>
     </div>
+
+    <p class="accroche accroche-photo" id="accroche"></p>
   </div>
 
   <div class="corps">
-
-    <p class="accroche"><span id="ligne-invite"></span></p>
-
-    <div class="ceremonie">
-      <p class="ceremonie-date" id="ceremonie-date"></p>
-      <div class="etapes" id="etapes"></div>
-    </div>
+    <div class="ceremonie" id="ceremonie"></div>
 
     <div class="bloc-rsvp">
-      <p class="deja-repondu" id="deja-repondu"></p>
-      <button class="btn btn-large" id="ouvrir-rsvp">RSVP</button>
-      <p class="note">Merci de nous répondre avant le <strong id="date-limite"></strong>.</p>
+      <button class="btn btn-large" id="ouvrir-rsvp"></button>
+      <p class="note" id="note"></p>
     </div>
-
   </div>
+
 </section>
 
-
-<div class="voile" id="voile" role="dialog" aria-modal="true" aria-label="Répondre à l’invitation">
-  <div class="tiroir">
-
-    <div id="formulaire">
-      <div class="choix">
-        <label>
-          <input type="radio" name="reponse" value="tous">
-          <span class="choix-txt">Nous serons tous là</span>
-        </label>
-        <label id="label-partiel">
-          <input type="radio" name="reponse" value="partiel">
-          <span class="choix-txt">Une partie d’entre nous seulement</span>
-        </label>
-        <label>
-          <input type="radio" name="reponse" value="aucun">
-          <span class="choix-txt">Nous ne pourrons pas venir</span>
-        </label>
-      </div>
-
-      <div class="membres" id="membres">
-        <p>Qui sera présent&nbsp;?</p>
-        <div id="membres-liste"></div>
-      </div>
-
-      <div class="champ">
-        <label for="mot">Un mot pour nous (facultatif)</label>
-        <textarea id="mot" maxlength="500" placeholder="Allergie, contrainte horaire, petit mot…"></textarea>
-      </div>
-
-      <p id="rsvp-erreur" role="alert"></p>
-
-      <div class="pied">
-        <button class="btn" id="envoyer" disabled>Envoyer notre réponse</button>
-        <button class="btn btn-fantome" id="fermer-rsvp">Annuler</button>
-      </div>
-    </div>
-
-    <div id="merci" style="display:none">
-      <div class="merci">
-        <div class="coche">✓</div>
-        <h2 id="merci-titre"></h2>
-        <div class="recap" id="merci-recap"></div>
-        <p id="merci-suite"></p>
-        <button class="btn btn-fantome" id="fermer-merci">Fermer</button>
-      </div>
-    </div>
-
-  </div>
+<div class="voile" id="voile" hidden>
+  <div class="tiroir" id="tiroir"></div>
 </div>
 
 <script src="config.js"></script>
 <script>
-const $  = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
+(function(){
+  "use strict";
 
-/* ── garde : sans code validé, retour à la page du code ── */
-let foyer = null;
-try { foyer = JSON.parse(sessionStorage.getItem("foyer-invite") || "null"); } catch(e){}
-if (!foyer || !foyer.code || !foyer.membres || !foyer.membres.length){
-  location.replace("index.html");
-}
+  /* ═══════════════════════════════════════════════════════════════
+     1. LE FOYER
+     Déposé par index.html dans sessionStorage. Pas de code en
+     mémoire → on renvoie à la saisie.
+     ═══════════════════════════════════════════════════════════════ */
 
-const echap = s => String(s).replace(/[&<>"']/g, c =>
-  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function liste(a){
-  if (!a.length) return "";
-  if (a.length === 1) return a[0];
-  return a.slice(0,-1).join(", ") + " et " + a[a.length-1];
-}
+  var brut = sessionStorage.getItem("foyer");
+  var code = sessionStorage.getItem("code");
+  if (!brut || !code){ location.replace("index.html"); return; }
 
-async function appel(charge){
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 20000);
-  try {
-    const r = await fetch(API, { method:"POST", body: JSON.stringify(charge), signal: ctrl.signal });
-    const txt = await r.text();
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return JSON.parse(txt);
-  } finally { clearTimeout(t); }
-}
+  var foyer   = JSON.parse(brut);
+  var invites = foyer.invites || [];          // déjà triés par prénom
+  var seul    = !!foyer.seul || invites.length === 1;
 
-/* ── icônes ── */
-const ICONES = {
-  eglise: '<path d="M12 2.2v3"/><path d="M10.4 3.5h3.2"/><path d="M12 5.4 8.2 9.3V21h7.6V9.3z"/><path d="M8.2 11.6 4 14.1V21h4.2"/><path d="M15.8 11.6 20 14.1V21h-4.2"/><path d="M10.3 21v-3.1a1.7 1.7 0 0 1 3.4 0V21"/><circle cx="12" cy="12.6" r="1"/>',
-  fete:   '<path d="M12 3.6c.55 4.6 1.5 5.55 6.1 6.1-4.6.55-5.55 1.5-6.1 6.1-.55-4.6-1.5-5.55-6.1-6.1 4.6-.55 5.55-1.5 6.1-6.1Z"/><path d="M6.4 14.9c.2 1.5.5 1.8 2 2-1.5.2-1.8.5-2 2-.2-1.5-.5-1.8-2-2 1.5-.2 1.8-.5 2-2Z"/><path d="M17.7 16.1c.15 1.1.35 1.35 1.45 1.5-1.1.15-1.3.4-1.45 1.5-.15-1.1-.35-1.35-1.45-1.5 1.1-.15 1.3-.4 1.45-1.5Z"/>',
-  mairie: '<path d="M12 3 3 8h18z"/><path d="M5.2 9.4V18"/><path d="M9.7 9.4V18"/><path d="M14.3 9.4V18"/><path d="M18.8 9.4V18"/><path d="M3 18h18"/><path d="M2 21h20"/>',
-  table:  '<path d="M4.5 4.5h15"/><path d="M12 4.5V21"/><path d="M8.2 9.2c0 2.1-1.2 3.4-2.6 3.4S3 11.3 3 9.2"/><path d="M21 9.2c0 2.1-1.2 3.4-2.6 3.4s-2.6-1.3-2.6-3.4"/>'
-};
-const svg = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" '
-  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  + (ICONES[n] || ICONES.fete) + '</svg>';
+  var p = new URLSearchParams(location.search);
+  var lang = (p.get("lang") === "en" || p.get("lang") === "fr")
+               ? p.get("lang")
+               : (foyer.langue || LANGUE_DEFAUT);
+  var T = TEXTES[lang] || TEXTES.fr;
 
-const img = $("#photo");
-img.addEventListener("error", () => img.style.display = "none");
-img.src = PHOTO;
+  document.documentElement.lang = lang;
+  document.title = T.titre_page;
+  document.getElementById("attente").textContent = T.chargement;
 
-$("#ceremonie-date").textContent = CEREMONIE.date;
-$("#date-limite").textContent = DATE_LIMITE;
-$("#etapes").innerHTML = CEREMONIE.etapes.map(e => {
-  const ville = e.maps
-    ? `<a href="${echap(e.maps)}" target="_blank" rel="noopener">${echap(e.ville)}</a>`
-    : echap(e.ville);
-  return `<div class="etape">
-      <div class="etape-icone">${svg(e.icone)}</div>
-      <div>
-        <p class="etape-heure">${echap(e.heure)}</p>
-        <p class="etape-quoi">${echap(e.quoi)}</p>
-        <p class="etape-lieu">${echap(e.lieu)}</p>
-        <p class="etape-adresse">${ville}</p>
-      </div>
-    </div>`;
-}).join("");
+  /* ═══════════════════════════════════════════════════════════════
+     2. OUTILS
+     ═══════════════════════════════════════════════════════════════ */
 
-/* ── contenu personnalisé ── */
-const m = foyer.membres;
+  function echap(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
 
-$("#ligne-invite").innerHTML = m.length === 1
-  ? `<strong>${echap(m[0])}</strong>, nous serions très heureux de vous avoir à nos côtés pour célébrer notre mariage.`
-  : `<strong>${echap(liste(m))}</strong>, nous serions très heureux de vous avoir à nos côtés pour célébrer notre mariage.`;
+  /* « Paul, Claire, Léa et Tom » — avec le bon connecteur. */
+  function liste(noms){
+    if (noms.length === 0) return "";
+    if (noms.length === 1) return noms[0];
+    var et = (lang === "en") ? " and " : " et ";
+    return noms.slice(0, -1).join(", ") + et + noms[noms.length - 1];
+  }
 
-if (m.length === 1) $("#label-partiel").style.display = "none";
+  var ICONES = {
+    eglise: '<g transform="translate(0 .4)">'
+      + '<path d="M12 2.2v3"/><path d="M10.4 3.5h3.2"/>'
+      + '<path d="M12 5.4 8.2 9.3V21h7.6V9.3z"/>'
+      + '<path d="M8.2 11.6 4 14.1V21h4.2"/><path d="M15.8 11.6 20 14.1V21h-4.2"/>'
+      + '<path d="M10.3 21v-3.1a1.7 1.7 0 0 1 3.4 0V21"/>'
+      + '<circle cx="12" cy="12.6" r="1"/></g>',
 
-$("#membres-liste").innerHTML = m.map((nom,i) =>
-  `<label><input type="checkbox" class="qui" value="${echap(nom)}" id="q${i}"><span>${echap(nom)}</span></label>`
-).join("");
+    fete: '<g transform="translate(.2 1.15)">'
+      + '<path d="M12 3.6c.55 4.6 1.5 5.55 6.1 6.1-4.6.55-5.55 1.5-6.1 6.1-.55-4.6-1.5-5.55-6.1-6.1 4.6-.55 5.55-1.5 6.1-6.1Z"/>'
+      + '<path d="M6.4 14.9c.2 1.5.5 1.8 2 2-1.5.2-1.8.5-2 2-.2-1.5-.5-1.8-2-2 1.5-.2 1.8-.5 2-2Z"/>'
+      + '<path d="M17.7 16.1c.15 1.1.35 1.35 1.45 1.5-1.1.15-1.3.4-1.45 1.5-.15-1.1-.35-1.35-1.45-1.5 1.1-.15 1.3-.4 1.45-1.5Z"/></g>',
 
-majReponse();
+    tasse: '<g transform="translate(1 -.55)">'
+      + '<path d="M3.9 9.3h12.2v5.4a4.6 4.6 0 0 1-4.6 4.6H8.5a4.6 4.6 0 0 1-4.6-4.6V9.3Z"/>'
+      + '<path d="M16.1 10.7h1.5a2.4 2.4 0 0 1 0 4.8h-1.5"/>'
+      + '<path d="M2.4 21.4h17.2"/>'
+      + '<path d="M8 6.6c-1-1 .7-1.9-.3-2.9"/>'
+      + '<path d="M12 6.6c-1-1 .7-1.9-.3-2.9"/></g>'
+  };
 
-function majReponse(){
-  const d = $("#deja-repondu");
+  function svg(nom){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"'
+         + ' stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"'
+         + ' aria-hidden="true">' + (ICONES[nom] || ICONES.fete) + '</svg>';
+  }
+
+  function envoyer(charge){
+    return fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(charge)
+    }).then(function(r){ return r.json(); });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     3. L'INVITATION
+     ═══════════════════════════════════════════════════════════════ */
+
+  var photo = document.getElementById("photo");
+  photo.src = PHOTO;
+  photo.alt = (lang === "en")
+    ? "Sophie and Edi at the proposal, in the canyon at sunset"
+    : "Sophie et Edi au moment de la demande, dans le canyon au coucher du soleil";
+
+  document.getElementById("save").textContent = T.save;
+
+  var prenoms = invites.map(function(i){ return i.prenom; });
+  document.getElementById("accroche").innerHTML =
+      "<strong>" + echap(liste(prenoms)) + "</strong>, "
+    + echap(seul ? T.accroche_solo : T.accroche);
+
+  document.getElementById("ceremonie").innerHTML =
+    (PROGRAMME[lang] || PROGRAMME.fr).map(function(jour){
+      var seule = jour.etapes.length === 1;
+      return '<div class="jour">'
+        + '<p class="ceremonie-date">' + echap(jour.date) + '</p>'
+        + '<div class="etapes' + (seule ? ' etapes-seul' : '') + '">'
+        + jour.etapes.map(function(e){
+            return '<div class="etape">'
+              + '<div class="etape-icone">' + svg(e.icone) + '</div>'
+              + '<div>'
+              + '<p class="etape-heure">'   + echap(e.heure) + '</p>'
+              + '<p class="etape-quoi">'    + echap(e.quoi)  + '</p>'
+              + '<p class="etape-lieu">'    + echap(e.lieu)  + '</p>'
+              + '<p class="etape-adresse">' + echap(e.ville) + '</p>'
+              + '</div></div>';
+          }).join("")
+        + '</div></div>';
+    }).join("");
+
+  var limite = (DATE_LIMITE && DATE_LIMITE[lang]) || DATE_LIMITE.fr || "";
+  document.getElementById("note").innerHTML =
+    echap(T.note) + " <strong>" + echap(limite) + "</strong>.";
+
+  var boutonPrincipal = document.getElementById("ouvrir-rsvp");
+  majBouton();
+
+  function majBouton(){
+    var deja = !!foyer.reponse;
+    boutonPrincipal.textContent = deja
+      ? (seul ? T.bouton_modif_solo : T.bouton_modif)
+      : T.bouton;
+  }
+
+  document.getElementById("attente").hidden = true;
+  document.getElementById("invitation").hidden = false;
+
+  /* ═══════════════════════════════════════════════════════════════
+     4. LE PANNEAU RSVP
+
+     Foyer d'une seule personne : deux réponses seulement, au
+     singulier, et pas de liste de prénoms à cocher — il n'y a
+     personne à départager.
+     Foyer de plusieurs : trois réponses, et le choix mariage /
+     brunch se pose UNE fois pour tout le foyer.
+     ═══════════════════════════════════════════════════════════════ */
+
+  var tiroir = document.getElementById("tiroir");
+  var voile  = document.getElementById("voile");
+  var etat = {
+    reponse: null,                 // "tous" | "partiel" | "aucun"
+    presents: prenoms.slice(),
+    brunch: true,
+    mot: ""
+  };
+
+  /* Réponse déjà envoyée : on rouvre dessus plutôt que sur du vide. */
   if (foyer.reponse){
-    d.classList.add("actif");
-    d.textContent = "Votre réponse est bien enregistrée : " + foyer.reponse + ".";
-    $("#ouvrir-rsvp").textContent = "Modifier notre réponse";
-  } else {
-    d.classList.remove("actif");
-    $("#ouvrir-rsvp").textContent = "RSVP";
-  }
-}
-
-/* ── tiroir ── */
-const voile = $("#voile");
-$("#ouvrir-rsvp").addEventListener("click", () => {
-  voile.classList.add("actif");
-  document.body.style.overflow = "hidden";
-});
-$("#fermer-rsvp").addEventListener("click", fermer);
-$("#fermer-merci").addEventListener("click", fermer);
-voile.addEventListener("click", e => { if (e.target === voile) fermer(); });
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && voile.classList.contains("actif")) fermer();
-});
-function fermer(){
-  voile.classList.remove("actif");
-  document.body.style.overflow = "";
-}
-
-$$('input[name="reponse"]').forEach(r => {
-  r.addEventListener("change", () => {
-    $("#membres").classList.toggle("actif", r.value === "partiel" && r.checked);
-    $("#rsvp-erreur").textContent = "";
-    majBouton();
-  });
-});
-document.addEventListener("change", e => {
-  if (e.target.classList.contains("qui")){ $("#rsvp-erreur").textContent = ""; majBouton(); }
-});
-
-const choisie = () => { const r = $$('input[name="reponse"]').find(x => x.checked); return r ? r.value : null; };
-const coches  = () => $$(".qui").filter(c => c.checked).map(c => c.value);
-function majBouton(){
-  const r = choisie();
-  $("#envoyer").disabled = !r || (r === "partiel" && coches().length === 0);
-}
-
-/* ── envoi ── */
-$("#envoyer").addEventListener("click", async () => {
-  const r = choisie();
-  if (!r) return;
-  if (r === "partiel" && coches().length === 0){
-    $("#rsvp-erreur").textContent = "Cochez au moins une personne, ou choisissez une autre réponse.";
-    return;
+    var r = foyer.reponse;
+    etat.presents = r.presents || [];
+    etat.brunch   = !!r.brunch;
+    etat.mot      = r.mot || "";
+    etat.reponse  = !etat.presents.length ? "aucun"
+                  : (etat.presents.length === invites.length ? "tous" : "partiel");
   }
 
-  const presents = r === "tous" ? foyer.membres.slice() : r === "partiel" ? coches() : [];
-  const btn = $("#envoyer");
-  btn.disabled = true;
-  btn.textContent = "Envoi…";
+  boutonPrincipal.addEventListener("click", ouvrirTiroir);
 
-  try {
-    const rep = await appel({
-      action:"repondre", code: foyer.code, reponse: r,
-      presents: presents, message: $("#mot").value.trim()
-    });
-    if (!rep || !rep.ok) throw new Error((rep && rep.erreur) || "refus");
-
-    foyer.reponse = r === "tous" ? "Tous présents" : r === "partiel" ? "Présence partielle" : "Absents";
-    try { sessionStorage.setItem("foyer-invite", JSON.stringify(foyer)); } catch(e){}
-    majReponse();
-    afficherMerci(r, presents);
-  } catch(e){
-    btn.disabled = false;
-    btn.textContent = "Envoyer notre réponse";
-    $("#rsvp-erreur").textContent = "L’envoi a échoué. Vérifiez votre connexion et réessayez.";
+  function ouvrirTiroir(){
+    voile.hidden = false;
+    document.body.style.overflow = "hidden";
+    dessinerChoix();
   }
-});
 
-/* Trois écrans de confirmation selon la réponse : le ton suit le sens
-   du message, et l'absence ne reçoit pas de promesse de détails. */
-function afficherMerci(r, presents){
-  const titre = $("#merci-titre");
-  const recap = $("#merci-recap");
-  const suite = $("#merci-suite");
+  function fermerTiroir(){
+    voile.hidden = true;
+    document.body.style.overflow = "";
+  }
 
-  if (r === "aucun"){
-    titre.innerHTML = "C’est noté, merci&nbsp;!";
-    recap.innerHTML = 'Vous nous manquerez <span class="emoji">🥺</span>';
-    recap.style.display = "block";
-    suite.style.display = "none";
-  } else {
-    titre.innerHTML = "Yeahhhhh&nbsp;! On a hâte&nbsp;!";
-    suite.textContent = "Nous revenons vers vous très vite avec les derniers détails.";
-    suite.style.display = "block";
+  function dessinerChoix(){
+    var h = '<div class="choix">';
 
-    if (r === "partiel"){
-      recap.textContent = presents.length === 1
-        ? presents[0] + " sera présent·e."
-        : liste(presents) + " seront présents.";
-      recap.style.display = "block";
+    if (seul){
+      h += radio("oui", T.rep_oui_solo, etat.reponse === "tous")
+         + pastillesFoyer(etat.reponse === "tous")
+         + radio("aucun", T.rep_non_solo, etat.reponse === "aucun");
     } else {
-      recap.style.display = "none";
+      h += radio("tous", T.rep_tous, etat.reponse === "tous")
+         + radio("partiel", T.rep_partiel, etat.reponse === "partiel")
+         + radio("aucun", T.rep_aucun, etat.reponse === "aucun");
     }
+    h += '</div>';
+
+    /* Le bloc « qui vient » n'apparaît que pour un foyer multiple
+       ayant choisi « une partie d'entre nous ». Les pastilles
+       mariage / brunch s'y posent une seule fois, en tête. */
+    if (!seul && (etat.reponse === "tous" || etat.reponse === "partiel")){
+      h += '<div class="membres">';
+      h += pastillesFoyer(true);
+      if (etat.reponse === "partiel"){
+        h += '<p>' + echap(T.qui) + '</p>';
+        h += '<div class="membres-grille">'
+          +  invites.map(function(i){
+               var coche = etat.presents.indexOf(i.prenom) >= 0;
+               return '<div class="membre"><label>'
+                 + '<input type="checkbox" data-prenom="' + echap(i.prenom) + '"'
+                 + (coche ? " checked" : "") + '>'
+                 + '<span>' + echap(i.prenom) + '</span></label></div>';
+             }).join("")
+          +  '</div>';
+      }
+      h += '</div>';
+    }
+
+    h += '<div class="champ">'
+      +  '<label for="mot">' + echap(T.mot_label) + '</label>'
+      +  '<textarea id="mot" placeholder="' + echap(T.mot_exemple) + '">'
+      +  echap(etat.mot) + '</textarea></div>'
+      +  '<p class="erreur" id="err-rsvp" role="status"></p>'
+      +  '<div class="pied">'
+      +  '<button class="btn" id="env">'
+      +  echap(seul ? T.envoyer_solo : T.envoyer) + '</button>'
+      +  '<button class="btn btn-fantome" id="ann">' + echap(T.annuler) + '</button>'
+      +  '</div>';
+
+    tiroir.innerHTML = h;
+    brancherChoix();
   }
 
-  $("#formulaire").style.display = "none";
-  $("#merci").style.display = "block";
-}
+  function radio(valeur, libelle, actif){
+    return '<label><input type="radio" name="rep" value="' + valeur + '"'
+         + (actif ? " checked" : "") + '>'
+         + '<span class="choix-txt">' + echap(libelle) + '</span></label>';
+  }
+
+  /* Le choix mariage / mariage + brunch, une seule fois par foyer. */
+  function pastillesFoyer(visible){
+    if (!visible) return "";
+    return '<div class="venue-foyer"><div class="venue">'
+      + '<label><input type="radio" name="venue" value="mariage"'
+      + (etat.brunch ? "" : " checked") + '>'
+      + '<span>' + echap(T.venue_mariage) + '</span></label>'
+      + '<label><input type="radio" name="venue" value="brunch"'
+      + (etat.brunch ? " checked" : "") + '>'
+      + '<span>' + echap(T.venue_brunch) + '</span></label>'
+      + '</div></div>';
+  }
+
+  function brancherChoix(){
+    tiroir.querySelectorAll('input[name="rep"]').forEach(function(r){
+      r.addEventListener("change", function(){
+        var v = r.value;
+        etat.reponse = (v === "oui") ? "tous" : v;
+        if (etat.reponse === "tous")  etat.presents = prenoms.slice();
+        if (etat.reponse === "aucun") etat.presents = [];
+        memoriserMot();
+        dessinerChoix();
+      });
+    });
+
+    tiroir.querySelectorAll('input[name="venue"]').forEach(function(r){
+      r.addEventListener("change", function(){ etat.brunch = (r.value === "brunch"); });
+    });
+
+    tiroir.querySelectorAll('.membres-grille input[type="checkbox"]')
+      .forEach(function(c){
+        c.addEventListener("change", function(){
+          var nom = c.getAttribute("data-prenom");
+          var i = etat.presents.indexOf(nom);
+          if (c.checked && i < 0) etat.presents.push(nom);
+          if (!c.checked && i >= 0) etat.presents.splice(i, 1);
+        });
+      });
+
+    tiroir.querySelector("#ann").addEventListener("click", fermerTiroir);
+    tiroir.querySelector("#env").addEventListener("click", soumettre);
+  }
+
+  function memoriserMot(){
+    var z = tiroir.querySelector("#mot");
+    if (z) etat.mot = z.value;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     5. ENVOI
+     ═══════════════════════════════════════════════════════════════ */
+
+  function soumettre(){
+    memoriserMot();
+    var err = tiroir.querySelector("#err-rsvp");
+
+    if (!etat.reponse){ err.textContent = T.err_personne; return; }
+    if (etat.reponse !== "aucun" && !etat.presents.length){
+      err.textContent = T.err_personne; return;
+    }
+
+    var bouton = tiroir.querySelector("#env");
+    bouton.disabled = true;
+    bouton.textContent = T.envoi_cours;
+    err.textContent = "";
+
+    envoyer({
+      action: "repondre",
+      code: code,
+      presents: (etat.reponse === "aucun") ? [] : etat.presents,
+      brunch: (etat.reponse !== "aucun") && etat.brunch,
+      mot: etat.mot
+    })
+    .then(function(d){
+      if (!d || !d.ok) throw new Error(d && d.erreur);
+      foyer.reponse = { presents:etat.presents, brunch:etat.brunch, mot:etat.mot };
+      sessionStorage.setItem("foyer", JSON.stringify(foyer));
+      majBouton();
+      confirmer(etat.reponse !== "aucun");
+    })
+    .catch(function(){
+      bouton.disabled = false;
+      bouton.textContent = seul ? T.envoyer_solo : T.envoyer;
+      err.textContent = T.err_envoi;
+    });
+  }
+
+  /* Deux états seulement : on vient, ou on ne vient pas. */
+  function confirmer(positif){
+    tiroir.innerHTML = positif
+      ? '<div class="merci">'
+        + '<div class="coche">✓</div>'
+        + '<h2>' + echap(T.merci_oui) + '</h2>'
+        + '<p>' + echap(T.merci_oui_2) + '</p>'
+        + '<button class="btn btn-fantome" id="fer">' + echap(T.fermer) + '</button>'
+        + '</div>'
+      : '<div class="merci">'
+        + '<div class="coche">✓</div>'
+        + '<h2>' + echap(T.merci_non) + '</h2>'
+        + '<div class="recap">' + echap(T.merci_non_2)
+        + ' <span class="emoji">🥺</span></div>'
+        + '<button class="btn btn-fantome" id="fer">' + echap(T.fermer) + '</button>'
+        + '</div>';
+    tiroir.querySelector("#fer").addEventListener("click", fermerTiroir);
+  }
+
+  voile.addEventListener("click", function(e){
+    if (e.target === voile) fermerTiroir();
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && !voile.hidden) fermerTiroir();
+  });
+})();
 </script>
+
 </body>
 </html>

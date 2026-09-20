@@ -1,26 +1,48 @@
 /* ══════════════════════════════════════════════════════════════════
-   1. PALETTE, TYPOGRAPHIE, MESURES
+   MARIAGE SOPHIE & EDI — feuille de style commune
+   Partagée par index.html (page code), invitation.html et admin.html.
+
+   La mise en page de l'invitation est celle de v9 :
+   — hauteur du cadre photo continue, calée sur téléphone et iPad
+   — page d'exactement un écran, la photo cède sa hauteur en premier
+   — écart samedi / dimanche en svh, variable d'ajustement
+   Voir VERSIONS.md pour l'historique des réglages.
+   ══════════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════════════════════════════
+   1. PALETTE ET TYPOGRAPHIE — identiques à la page du code
    ══════════════════════════════════════════════════════════════════ */
 :root{
-  --encre:    #0E1220;   /* fond, bleu nuit */
-  --encre-2:  #171D30;   /* surfaces */
-  --encre-3:  #232A42;   /* bordures, filets */
-  --or:       #E8B667;   /* accent */
-  --ivoire:   #F2EDE6;   /* texte principal */
-  --dim:      #B3AFA8;   /* texte secondaire */
+  --encre:    #0E1220;
+  --encre-2:  #171D30;
+  --encre-3:  #232A42;
+  --or:       #E8B667;
+  /* La respiration entre les trois blocs du bas : phrase, journée, RSVP. */
+  --gap-bloc: clamp(.7rem,2.6vw,1.15rem);
+  /* Unité de base des deux colonnes. Tous les textes en dérivent par
+     un rapport fixe, donc changer cette seule valeur les redimensionne
+     ensemble sans casser leur hiérarchie. */
+  --te: clamp(.74rem,3.2vw,1rem);
+  /* Le retrait sous la note, jusqu'au bord de l'écran. */
+  --pied: clamp(1.15rem,3.6svh,1.5rem);
+  /* Retrait sous la phrase posée sur la photo : c'est aussi la
+     hauteur qui sépare le bas du texte du bord du cadre. */
+  --sous-phrase: clamp(1.45rem,calc(.61vw + 1.28rem),1.6rem);
+  /* Air entre le bord du cadre et le début du contenu bleu. */
+  --haut-corps: clamp(.35rem,1.4vw,1rem);
+  --ivoire:   #F2EDE6;
+  --dim:      #B3AFA8;
+  --gris:     #D4D0C9;   /* heures : visibles, mais en retrait de l'or */
   --erreur:   #E98A7B;
 
-  --noms:  "Cormorant Garamond", Georgia, serif;   /* Sophie & Edi */
-  --caps:  "Cinzel", Georgia, serif;               /* dates et heures */
-  --titre: "Playfair Display", Georgia, serif;     /* noms de lieux */
+  --titre: "Playfair Display", Georgia, serif;
+  /* Capitales romaines : ses chiffres sont dessinés à la hauteur des
+     majuscules, contrairement à Playfair dont les chiffres tombent
+     plus bas et paraissent rétrécis. */
+  --caps:  "Cinzel", Georgia, serif;
   --texte: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-
-  /* Respiration entre les trois blocs sous la photo. */
-  --gap-bloc: clamp(1.95rem,6.2vw,3.1rem);
-  /* Unité des deux colonnes : tout en dérive par un rapport fixe. */
-  --te: clamp(.74rem,3.2vw,1rem);
-  /* Retrait du pied, sous la note. */
-  --pied: clamp(1rem,3.4svh,1.9rem);
+  --noms:  "Cormorant Garamond", Georgia, serif;
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -37,171 +59,165 @@ body{
 
 
 /* ══════════════════════════════════════════════════════════════════
-   2. PAGE DU CODE
+   2. LA PHOTO
+   Plein cadre en haut, fondue dans le fond par un dégradé, pour que
+   la photo n'ait pas de bord net et que le texte puisse chevaucher.
    ══════════════════════════════════════════════════════════════════ */
-#porte{
-  min-height:100svh;
-  display:grid;
-  place-items:center;
-  padding:
-    calc(2rem + env(safe-area-inset-top,0px))
-    1.5rem
-    calc(2rem + env(safe-area-inset-bottom,0px));
-  background:radial-gradient(120% 80% at 50% 0%, #1E2540 0%, var(--encre) 62%);
-}
-.porte-bloc{width:100%;max-width:26rem;text-align:center}
-
-.monogramme{
-  font-family:var(--noms);
-  font-weight:400;
-  font-style:italic;
-  font-size:clamp(2.7rem,11vw,4.3rem);
-  line-height:1.06;
-  /* L'italique penche : ce retrait redresse le bloc centré. */
-  letter-spacing:.005em;
-  text-indent:-.05em;
-  margin:0 0 1.1rem;
-  text-shadow:0 0 38px rgba(232,182,103,.13);
-}
-.monogramme .et{
-  font-family:var(--noms);
-  /* Le & romain de Cormorant est la forme à grande boucle ; son
-     italique est bien plus sage. Ce "normal" est volontaire. */
-  font-style:normal;
-  font-size:1em;
-  color:var(--or);
-  /* Pas de blanc dans le HTML autour du & : l'espace typographique
-     s'ajouterait au padding et doublerait l'écart. */
-  padding:0 .12em;
-  display:inline-block;
-  transform:translateY(.06em);
-}
-
-.porte-sous{
-  font-family:var(--caps);
-  font-size:.78rem;
-  font-weight:400;
-  letter-spacing:.26em;
-  text-indent:.26em;
-  text-transform:uppercase;
-  color:var(--dim);
-  margin:0 0 3.2rem;
-}
-.porte-sous span{display:inline-flex;align-items:center;gap:1.1rem}
-.porte-sous span::before,
-.porte-sous span::after{
-  content:"";width:2rem;height:1px;background:var(--encre-3);
-}
-
-.porte-consigne{
-  font-size:.98rem;
-  font-weight:300;
-  letter-spacing:.01em;
-  margin:0 0 1.5rem;
-}
-
-.chiffres{
-  display:flex;
-  gap:clamp(.4rem,2.5vw,.7rem);
-  justify-content:center;
-  margin-bottom:1.4rem;
-  transition:opacity .2s ease;
-}
-.chiffres input{
-  width:clamp(2.9rem,17vw,3.6rem);
-  height:clamp(3.6rem,21vw,4.4rem);
-  background:transparent;
-  border:1px solid var(--encre-3);
-  border-radius:2px;
-  color:var(--ivoire);
-  font-family:var(--texte);
-  font-weight:300;
-  font-size:1.6rem;
-  text-align:center;
-  transition:border-color .18s ease;
-}
-.chiffres input:focus{border-color:var(--or);outline:none}
-.chiffres.faux input{border-color:var(--erreur)}
-.chiffres.verif{opacity:.35;pointer-events:none}
-.chiffres.secousse{animation:secousse .38s ease}
-@keyframes secousse{
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-7px)}
-  45%{transform:translateX(6px)}
-  70%{transform:translateX(-3px)}
-}
-
-/* Hauteur réservée en permanence : sans elle, l'apparition d'une
-   erreur décalerait tout le bloc. */
-#porte-msg{min-height:1.4rem;font-size:.92rem;margin:0}
-#porte-msg.erreur{color:var(--erreur)}
-#porte-msg.attente{color:var(--dim)}
-#porte-detail{
-  font-size:.72rem;color:#4A5372;margin:1.4rem 0 0;
-  word-break:break-word;line-height:1.5;font-family:ui-monospace,monospace;
-}
-
-
-/* ══════════════════════════════════════════════════════════════════
-   3. INVITATION
-   ══════════════════════════════════════════════════════════════════ */
-
-/* La page fait exactement la hauteur de l'écran ; le blanc restant
-   est réparti plus bas par les marges automatiques. */
+/* La page occupe exactement la hauteur de l'écran et le bloc RSVP
+   est poussé vers le bas par une marge automatique : il se cale donc
+   juste au-dessus du bord, quelle que soit la taille du téléphone. */
 #invitation{
   max-width:52rem;
   margin:0 auto;
-  min-height:100svh;
+  /* hauteur EXACTE, pas minimale : le contenu ne peut plus pousser la
+     page vers le bas, donc le bouton reste toujours dans l'écran. */
+  height:100svh;
+  overflow:hidden;
   display:flex;
   flex-direction:column;
   padding:0;
 }
 
-/* Sur téléphone, c'est le plafond en hauteur d'écran qui commande ;
-   sur grand écran, c'est le ratio. */
+/* ── la hauteur du cadre ──
+   Plus d'aspect-ratio, plus de paliers @media : la hauteur est une
+   droite continue en fonction de la largeur de fenêtre.
+
+       hauteur = 18 % de la largeur + 20 rem
+
+   Elle bouge donc à CHAQUE pixel de redimensionnement, sans saut.
+   Le 20 rem est la part fixe qui garantit un cadre déjà haut sur
+   téléphone ; le 18vw est la part qui suit l'élargissement.
+
+   Le plafond de 58svh n'est là que pour les écrans très bas. Il
+   entre en jeu vers 830 px de large — c'est-à-dire pile au moment
+   où #invitation atteint son max-width de 52rem et cesse lui aussi
+   de s'élargir. Largeur et hauteur se figent donc ensemble. */
 .photo-cadre{
   position:relative;
   width:100%;
-  aspect-ratio:5/4;
-  max-height:35svh;
+  /* hauteur SOUHAITÉE ; flex-shrink la réduit si la page déborde.
+
+     Cette droite est calée sur deux points mesurés :
+       440 px de large (iPhone 16 Pro Max) → 349 px, la valeur de v4
+       820 px de large (iPad)              → 466 px, la valeur de v3
+     Elle donne donc v4 sur téléphone et v3 sur iPad, sans palier :
+     la pente est simplement plus forte qu'avant (30.9vw au lieu de
+     16vw), si bien que le cadre s'étire plus vite en s'élargissant.
+
+     Le plafond revient à 50svh, la valeur de v3 : c'est lui qui
+     gouverne l'ordinateur, où le cadre est le plus panoramique. */
+  height:min(calc(30.9vw + 13.3rem), 50svh);
+  flex:0 1 auto;
+  min-height:0;
   overflow:hidden;
   background:var(--encre);
 }
-@media(min-width:40rem){.photo-cadre{aspect-ratio:16/9;max-height:50svh}}
-@media(min-width:64rem){.photo-cadre{aspect-ratio:21/9;max-height:54svh}}
 
 .photo-cadre img{
   width:100%;height:100%;
   object-fit:cover;
-  /* Le point de la photo aligné au centre du cadre : monter la valeur
-     fait remonter l'image, la baisser la fait descendre. */
-  object-position:center 40%;
+  /* 46 % place le titre sur la ligne des falaises plutôt que dans le
+     ciel, et donne le même écart au-dessus de vos têtes qu'en dessous
+     de vos pieds. Cette valeur et max-height vont par paire : changer
+     l'une sans l'autre casse cette symétrie. */
+  object-position:center 46%;
   display:block;
 }
 
-/* La photo n'a pas de bord net en bas : elle se dissout dans le fond.
-   Le haut est assombri pour que le titre reste lisible. */
+/* ── le fondu ──
+   La photo n'a pas de bord net : elle se dissout dans le fond par
+   le bas et, plus légèrement, sur les côtés. */
 .photo-cadre::after{
   content:"";
   position:absolute;inset:0;
   pointer-events:none;
-  background:linear-gradient(to bottom,
-    rgba(14,18,32,.62) 0%,
-    rgba(14,18,32,.28) 26%,
-    rgba(14,18,32,0) 48%,
-    rgba(14,18,32,.72) 86%,
-    var(--encre) 100%);
+  background:
+    linear-gradient(to bottom,
+      rgba(14,18,32,.62) 0%,
+      rgba(14,18,32,.28) 26%,
+      rgba(14,18,32,0) 42%,
+      rgba(14,18,32,.55) 64%,
+      rgba(14,18,32,.88) 84%,
+      var(--encre) 100%);
 }
 
+/* ── le titre, posé en haut de la photo ──
+   z-index 2 : au-dessus du fondu, qui est en ::after. */
 .titre-photo{
   position:absolute;
   top:0;left:0;right:0;
   z-index:2;
   text-align:center;
-  padding:calc(clamp(.7rem,2.6vw,2.4rem) + env(safe-area-inset-top,0px)) 1.2rem 0;
+  /* Le retrait au-dessus du titre doit AUGMENTER sur téléphone sans
+     rien changer au-delà. Un clamp ne sait que croître avec la
+     largeur ; on prend donc le plus grand de deux termes :
+
+       calc(1.965rem - 1.237vw)  décroît → gouverne le téléphone
+       clamp(.7rem,2.6vw,2.4rem) croît   → gouverne iPad et ordinateur
+
+     Ils se croisent à 820 px, la largeur d'un iPad : en dessous le
+     premier gagne, au-dessus le second.
+
+     v8 remonte encore le titre sur iPad et ordinateur : le terme
+     croissant descend à 1.5vw (plafond 1.5rem). Le terme décroissant
+     est repenté à chaque fois pour garder la valeur du téléphone
+     figée à 26 px à 440 px de large, ET pour que les deux courbes
+     continuent de se croiser pile à 820 px. */
+  padding:max(calc(2.616rem - 3.605vw), clamp(.7rem,1.5vw,1.5rem)) 1.2rem 0;
   pointer-events:none;
 }
 
+.photo-vide{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  font-size:.72rem;letter-spacing:.16em;
+  color:rgba(242,237,230,.5);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   3. LE CORPS
+   ══════════════════════════════════════════════════════════════════ */
+/* La phrase est posée dans le fondu du bas de la photo. Le padding
+   bas la décolle du bord, celui du haut garantit l'écart avec le
+   couple quelle que soit la hauteur du cadre. */
+/* Les repères verts et bleus ont été retirés : ils n'étaient que le
+   dessin de ce que le CSS calcule déjà. Le centrage de la journée
+   repose sur --sous-phrase et --haut-corps, pas sur les traits — il
+   continue donc de s'adapter tout seul à chaque taille d'écran. */
+
+/* ░░ fin du repère ░░ */
+
+.accroche-photo{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  z-index:2;
+  max-width:32rem;
+  margin:0 auto !important;
+  padding:2.5rem clamp(1.2rem,5vw,2.5rem) var(--sous-phrase);
+  text-align:center;
+  text-shadow:0 2px 18px rgba(8,10,18,.85), 0 1px 3px rgba(8,10,18,.6);
+}
+
+.corps{
+  /* 1 0 auto : le corps prend le blanc restant mais ne rétrécit
+     jamais — dates, bouton et note gardent leur taille. */
+  flex:1 0 auto;
+  display:flex;
+  flex-direction:column;
+  padding:var(--haut-corps) clamp(1.2rem,5vw,3rem) 0;
+  text-align:center;
+  position:relative;
+  z-index:1;
+}
+
+/* margin-top:auto absorbe tout le blanc restant ; le padding du bas
+   laisse le petit retrait par rapport au bord de l'écran. */
+.bloc-rsvp{
+  padding-bottom:calc(var(--pied) + env(safe-area-inset-bottom,0px));
+}
+
+/* ── les prénoms ── */
 .noms{
   font-family:var(--noms);
   font-weight:400;
@@ -211,20 +227,12 @@ body{
   letter-spacing:.005em;
   text-indent:-.05em;
   margin:0 0 .85rem;
-  /* Une ombre large pour décoller le texte de la photo, une serrée
-     pour garder nets les déliés fins de l'italique. */
+  /* deux ombres : une large pour décoller le texte de la photo,
+     une serrée pour garder les fines déliées de l'italique nettes */
   text-shadow:0 2px 26px rgba(8,10,18,.75), 0 1px 3px rgba(8,10,18,.5);
 }
-.noms .et{
-  font-family:var(--noms);
-  font-style:normal;
-  font-size:1em;
-  color:var(--or);
-  padding:0 .12em;
-  display:inline-block;
-  transform:translateY(.06em);
-}
 
+/* ── save the date, repris de la page du code ── */
 .sous-titre{
   font-family:var(--caps);
   font-size:clamp(.7rem,2.4vw,.8rem);
@@ -236,7 +244,11 @@ body{
   margin:0;
   text-shadow:0 1px 12px rgba(8,10,18,.8);
 }
-.sous-titre span{display:inline-flex;align-items:center;gap:1rem}
+.sous-titre span{
+  display:inline-flex;
+  align-items:center;
+  gap:1rem;
+}
 .sous-titre span::before,
 .sous-titre span::after{
   content:"";
@@ -244,60 +256,98 @@ body{
   height:1px;
   background:rgba(242,237,230,.45);
 }
-
-.corps{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  padding:clamp(.75rem,2.6vw,1.9rem) clamp(1.2rem,5vw,3rem) 0;
-  text-align:center;
-  position:relative;
-  z-index:1;
+.noms .et{
+  font-family:var(--noms);
+  font-style:normal;                      /* le & à grande boucle */
+  font-size:1em;
+  color:var(--or);
+  padding:0 .12em;
+  display:inline-block;
+  transform:translateY(.06em);
 }
 
+/* ── la phrase d'invitation ── */
 .accroche{
   font-family:var(--noms);
   font-style:italic;
   font-weight:400;
-  /* Cormorant a un œil plus petit que Lato : un cran de plus. */
+  /* Cormorant a un œil plus petit que Lato : à corps égal la phrase
+     paraîtrait rétrécie, d'où le cran de taille en plus. */
   font-size:clamp(1.08rem,4.1vw,1.25rem);
-  line-height:1.5;
+  /* L'interligne compte le corps des lettres plus le blanc entre les
+     lignes ; c'est ce blanc qu'on réduit de 20 %, de .5em à .4em. */
+  line-height:1.4;
   max-width:29rem;
   margin:0 auto;
   color:var(--ivoire);
 }
-@media(min-width:40rem){.accroche{line-height:1.6}}
-.accroche strong{font-weight:500;color:var(--or)}
+@media(min-width:40rem){.accroche{line-height:1.5}}
+.accroche strong{
+  font-weight:500;
+  color:var(--or);
+}
 
-/* margin:auto en haut ET en bas : le blanc se partage à parts égales,
-   donc la journée tombe pile au milieu. Le padding garantit un écart
+
+
+/* ══════════════════════════════════════════════════════════════════
+   4. LA JOURNÉE
+   Une date, puis les étapes reliées par un trait vertical.
+   ══════════════════════════════════════════════════════════════════ */
+/* margin:auto en haut ET en bas : le blanc disponible se partage à
+   parts égales des deux côtés, donc la journée tombe pile au milieu
+   entre la phrase et le bloc RSVP. Le padding garantit un écart
    minimum quand il ne reste plus de blanc à partager. */
+/* margin:auto en haut ET en bas : le blanc disponible se partage à
+   parts égales, donc la journée tombe visuellement au milieu entre
+   la photo et le bouton. */
 .ceremonie{
   max-width:30rem;
   margin:auto;
   padding:var(--gap-bloc) 0;
+  /* Les marges automatiques centrent la journée entre le BAS DU CADRE
+     et le bloc RSVP. La zone voulue commence plus haut, au bas du
+     texte : elle démarre (--sous-phrase + --haut-corps) plus tôt, donc
+     le bloc doit remonter de la moitié de cette différence. */
+  transform:translateY(calc((var(--sous-phrase) + var(--haut-corps)) / -2));
 }
 @media(min-width:40rem){.ceremonie{max-width:36rem}}
 
+/* Deux jours empilés : chacun porte sa date puis ses moments. */
+/* L'écart entre les deux journées est désormais la variable
+   d'ajustement de la page. Il est exprimé en svh, pas en vw : il
+   grandit donc sur un écran haut et se resserre en premier sur un
+   écran court, avant qu'on touche à quoi que ce soit d'autre.
+   Le filet le sépare en deux moitiés égales, marge puis padding. */
+.jour + .jour{
+  margin-top:clamp(.45rem,1.6svh,1.4rem);
+  padding-top:clamp(.45rem,1.6svh,1.4rem);
+  border-top:1px solid var(--encre-3);
+}
+
 .ceremonie-date{
   font-family:var(--caps);
-  font-size:clamp(1.02rem,4vw,1.3rem);
+  font-size:clamp(.86rem,3.3vw,1.08rem);
   font-weight:700;
   /* Plus le corps grossit, moins l'interlettrage doit être large. */
   letter-spacing:.12em;
   text-indent:.12em;
   text-transform:uppercase;
   color:var(--or);
-  margin:0 0 1.3rem;
+  margin:0 0 .6rem;
 }
 
-/* Les deux moments côte à côte ; le blanc suffit à les séparer. */
+/* ── les deux moments, côte à côte ──
+   Plus de filet entre les colonnes : le blanc suffit à les séparer. */
 .etapes{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:clamp(.5rem,2.5vw,1.6rem);
   text-align:left;
 }
+/* Un seul moment dans la journée : on le centre plutôt que de le
+   laisser collé à gauche sur une colonne pleine largeur. */
+.etapes-seul{grid-template-columns:auto;justify-content:center}
+
 .etape{
   display:grid;
   grid-template-columns:auto 1fr;
@@ -316,7 +366,7 @@ body{
 }
 .etape-icone svg{width:56%;height:56%}
 
-/* nowrap partout : ces quatre lignes tiennent d'un seul tenant,
+/* nowrap partout : ces quatre lignes doivent tenir d'un seul tenant,
    c'est le corps qui s'adapte à la colonne, pas l'inverse. */
 .etape-heure,.etape-quoi,.etape-lieu,.etape-adresse{white-space:nowrap}
 
@@ -325,7 +375,7 @@ body{
   font-weight:700;
   font-size:var(--te);
   letter-spacing:.04em;
-  color:var(--or);
+  color:var(--gris);
   margin:0;
   line-height:1.1;
 }
@@ -349,39 +399,16 @@ body{
 }
 .etape-adresse a{color:inherit;text-decoration-color:var(--encre-3)}
 
-.bloc-rsvp{
-  padding-bottom:calc(var(--pied) + env(safe-area-inset-bottom,0px));
-}
-
-.note{
-  font-size:clamp(.82rem,3.1vw,.92rem);
-  line-height:1.55;
-  color:var(--dim);
-  max-width:27rem;
-  /* Le raccourci margin vient en dernier, sinon il écraserait le haut. */
-  margin:calc(var(--pied) * .5) auto 0;
-}
-.note strong{color:var(--ivoire);font-weight:400}
-
-.deja-repondu{
-  display:none;
-  font-size:.9rem;
-  color:var(--or);
-  margin:0 auto .9rem;
-  max-width:28rem;
-}
-.deja-repondu.actif{display:block}
-
 
 /* ══════════════════════════════════════════════════════════════════
-   4. BOUTONS
+   5. BOUTONS ET PIED
    ══════════════════════════════════════════════════════════════════ */
 .btn{
   font-family:var(--texte);
   font-size:clamp(.88rem,3.3vw,.92rem);
   font-weight:400;
   letter-spacing:.06em;
-  padding:clamp(.85rem,3.2vw,1.05rem) 2.4rem;
+  padding:clamp(.85rem,3.2vw,1.05rem) clamp(1.1rem,5vw,2.4rem);
   border-radius:2px;
   border:1px solid var(--or);
   background:var(--or);
@@ -390,7 +417,6 @@ body{
   transition:background .18s ease;
 }
 .btn:hover{background:#F0C87E}
-.btn:disabled{opacity:.4;cursor:not-allowed}
 .btn-fantome{
   background:transparent;
   color:var(--dim);
@@ -399,45 +425,65 @@ body{
   padding:.85rem 1.6rem;
 }
 .btn-fantome:hover{background:transparent;color:var(--ivoire);border-color:var(--dim)}
-.btn-large{width:100%;max-width:15rem;letter-spacing:.14em}
+/* Le libellé change selon l'état (« Répondre à l'invitation » ou
+   « Modifier notre réponse ») : nowrap interdit la coupure, et le
+   corps suit la largeur d'écran pour que la plus longue des deux
+   tienne toujours sur une ligne. */
+.btn-large{
+  width:100%;
+  max-width:21rem;
+  letter-spacing:.06em;
+  white-space:nowrap;
+  font-size:clamp(.8rem,3.5vw,.95rem);
+}
+
+.note{
+  font-size:clamp(.82rem,3.1vw,.92rem);
+  line-height:1.55;
+  color:var(--dim);
+  max-width:27rem;
+  /* le raccourci margin vient en dernier, sinon il écrase le margin-top */
+  /* moitié du retrait du bas : le bouton descend vers la note */
+  margin:calc(var(--pied) * .4) auto 0;
+}
+.note strong{color:var(--ivoire);font-weight:400}
+
 
 
 /* ══════════════════════════════════════════════════════════════════
-   5. PANNEAU RSVP
+   6. LE PANNEAU RSVP
+   Dans la vraie page il s'ouvre par-dessus l'invitation. Ici il est
+   posé à la suite, pour qu'on puisse en travailler le design.
    ══════════════════════════════════════════════════════════════════ */
-.voile{
-  position:fixed;inset:0;
-  background:rgba(8,10,18,.82);
-  backdrop-filter:blur(4px);
-  display:none;align-items:flex-end;justify-content:center;
-  z-index:20;
-}
-.voile.actif{display:flex}
-@media(min-width:40rem){.voile{align-items:center;padding:2rem}}
 
 .tiroir{
   background:var(--encre-2);
   border:1px solid var(--encre-3);
-  border-radius:4px 4px 0 0;
+  border-radius:4px;
   width:100%;max-width:32rem;
-  max-height:92svh;overflow-y:auto;
-  padding:2.2rem 1.6rem calc(1.6rem + env(safe-area-inset-bottom,0px));
-  animation:monte .28s cubic-bezier(.2,.7,.3,1);
+  margin:0 auto;
+  padding:2.4rem 1.8rem 2rem;
 }
-@media(min-width:40rem){.tiroir{border-radius:4px;padding:2.6rem}}
-@keyframes monte{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@media(min-width:40rem){.tiroir{padding:2.6rem}}
 
 .tiroir h2{
   font-family:var(--titre);
   font-weight:400;
   font-size:1.5rem;
   line-height:1.3;
-  margin:0 0 .9rem;
+  margin:0 0 .5rem;
+}
+.tiroir p.intro{
+  font-size:.92rem;
+  line-height:1.6;
+  color:var(--dim);
+  margin:0 0 1.9rem;
 }
 
+/* ── les trois réponses ── */
 .choix{display:grid;gap:.7rem;margin:0 0 1.5rem}
 .choix label{
-  display:flex;align-items:center;gap:.9rem;
+  display:flex;align-items:flex-start;gap:.9rem;
   padding:1.05rem 1.1rem;
   border:1px solid var(--encre-3);
   border-radius:3px;
@@ -448,37 +494,84 @@ body{
 .choix label:has(input:checked){border-color:var(--or);background:rgba(232,182,103,.06)}
 .choix input{
   appearance:none;
-  width:1.05rem;height:1.05rem;flex:0 0 auto;
+  width:1.05rem;height:1.05rem;margin:.2rem 0 0;flex:0 0 auto;
   border:1px solid var(--dim);border-radius:50%;
   transition:border-color .16s ease,box-shadow .16s ease;
 }
 .choix input:checked{border-color:var(--or);box-shadow:inset 0 0 0 4px var(--or)}
-.choix-txt{font-size:.96rem;line-height:1.4}
+.choix-txt{font-size:.96rem;line-height:1.45}
+.choix-txt small{display:block;color:var(--dim);font-size:.83rem;margin-top:.15rem}
+
+/* ── le choix mariage / brunch ──
+   Deux pastilles côte à côte, visibles seulement quand la réponse
+   ou la personne concernée est retenue. */
+.venue{
+  display:flex;
+  gap:.5rem;
+  margin:.5rem 0 .2rem 2rem;
+}
+.venue label{
+  flex:1;
+  display:block;
+  text-align:center;
+  padding:.55rem .4rem;
+  border:1px solid var(--encre-3);
+  border-radius:3px;
+  cursor:pointer;
+  font-size:.85rem;
+  color:var(--dim);
+  transition:border-color .16s ease,color .16s ease,background .16s ease;
+}
+.venue label:has(input:checked){
+  border-color:var(--or);
+  color:var(--ivoire);
+  background:rgba(232,182,103,.07);
+}
+/* La pastille entière est la cible : le rond natif disparaît. */
+.venue input{position:absolute;opacity:0;width:0;height:0}
+
+/* ── les cases par personne ── */
+.membre{padding:0}
+.membre:last-child{border-bottom:0}
 
 .membres{
-  display:none;
   padding:1.3rem 0 .4rem;
   border-top:1px solid var(--encre-3);
   margin-bottom:1.4rem;
 }
-.membres.actif{display:block}
+/* Les prénoms sur une grille de 3 colonnes : la largeur du tiroir est
+   entièrement occupée, et une quatrième personne repart à la ligne
+   suivante. auto-fit + minmax garde des colonnes lisibles quand un
+   prénom est long — on retombe à 2 colonnes plutôt que de tronquer. */
+.membres-grille{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));
+  gap:.55rem 1.1rem;
+}
+/* Le choix mariage / brunch du foyer, posé une seule fois au-dessus
+   des prénoms. Plus de pastilles par personne. */
+.venue-foyer{
+  margin:0 0 1.1rem;
+}
+.venue-foyer .venue{margin-left:0}
 .membres > p{
   font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
   color:var(--dim);margin:0 0 .9rem;
 }
-.membres label{
+.membre > label{
   display:flex;align-items:center;gap:.85rem;
-  padding:.75rem .2rem;cursor:pointer;font-size:1rem;
+  padding:.5rem .2rem;cursor:pointer;
+  font-size:1rem;
 }
-.membres input{
+.membre > label input{
   appearance:none;
   width:1.15rem;height:1.15rem;flex:0 0 auto;
   border:1px solid var(--dim);border-radius:2px;
   position:relative;
   transition:background .16s ease,border-color .16s ease;
 }
-.membres input:checked{background:var(--or);border-color:var(--or)}
-.membres input:checked::after{
+.membre > label input:checked{background:var(--or);border-color:var(--or)}
+.membre > label input:checked::after{
   content:"";position:absolute;
   left:.34rem;top:.13rem;
   width:.26rem;height:.55rem;
@@ -486,6 +579,7 @@ body{
   transform:rotate(43deg);
 }
 
+/* ── le mot libre ── */
 .champ{margin-bottom:1.6rem}
 .champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:.5rem}
 .champ textarea{
@@ -499,8 +593,9 @@ body{
 .champ textarea:focus{border-color:var(--or);outline:none}
 
 .pied{display:grid;gap:.7rem}
-#rsvp-erreur{min-height:1.2rem;font-size:.88rem;color:var(--erreur);margin:0 0 .6rem}
 
+
+/* ── l'écran de confirmation ── */
 .merci{text-align:center;padding:2.2rem .4rem .6rem}
 .merci .coche{
   width:3rem;height:3rem;margin:0 auto 1.5rem;
@@ -509,6 +604,10 @@ body{
   color:var(--or);font-size:1.2rem;
 }
 .merci h2{margin-bottom:.9rem}
+/* l'emoji garde sa couleur propre, hors de l'italique dorée */
+.recap .emoji{font-style:normal;font-size:.9em;margin-left:.15em}
+
+.recap em{font-style:normal;color:var(--or)}
 .merci .recap{
   font-family:var(--noms);
   font-style:italic;
@@ -517,11 +616,74 @@ body{
   border-bottom:1px solid var(--encre-3);
   padding:1.3rem 0;margin-bottom:1.6rem;
 }
-/* L'emoji garde sa couleur et sa verticale, hors de l'italique. */
-.recap .emoji{font-style:normal;font-size:.9em;margin-left:.15em}
 .merci p{
   color:var(--dim);font-size:.93rem;line-height:1.65;
   margin:0 auto 1.8rem;max-width:23rem;
 }
 
-@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+
+/* ── page code (index.html) ── */
+.page-code{
+  min-height:100svh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:2rem 1.5rem;text-align:center;
+}
+.monogramme{
+  font-family:var(--noms);font-style:italic;
+  font-size:clamp(3rem,14vw,4.5rem);
+  color:var(--ivoire);margin:0 0 .4rem;
+}
+.monogramme .et{font-style:normal;color:var(--or);padding:0 .1em}
+.page-code .sous-titre{margin-bottom:clamp(2rem,7svh,3.5rem)}
+.invite-code{
+  font-size:clamp(.88rem,3.6vw,1rem);
+  color:var(--dim);margin:0 0 1.2rem;max-width:22rem;
+}
+.saisie{
+  display:flex;gap:.6rem;justify-content:center;margin-bottom:1.2rem;
+}
+.saisie input{
+  width:3.2rem;height:3.9rem;
+  font-family:var(--caps);font-size:1.5rem;font-weight:700;
+  text-align:center;color:var(--ivoire);
+  background:var(--encre-2);
+  border:1px solid var(--encre-3);border-radius:3px;
+  caret-color:var(--or);
+}
+.saisie input:focus{outline:none;border-color:var(--or)}
+.erreur{
+  color:#E88A7D;font-size:.88rem;min-height:1.4rem;margin:0 0 1rem;
+}
+
+/* ── état de chargement ── */
+.attente{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--encre);
+  font-family:var(--caps);font-size:.8rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+}
+.attente[hidden]{display:none}
+
+/* display:flex l'emporte sur le display:none du navigateur :
+   sans cette règle, un élément [hidden] resterait visible. */
+[hidden]{display:none !important}
+
+/* ── le panneau RSVP en surimpression ──
+   Dans le banc d'essai il était posé sous l'invitation, pour la
+   relecture. En production il la recouvre : .voile est le fond
+   sombre plein écran, .tiroir reste le panneau lui-même. */
+.voile{
+  position:fixed;inset:0;z-index:40;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(.8rem,4vw,2rem);
+  padding-top:max(clamp(.8rem,4vw,2rem), env(safe-area-inset-top,0px));
+  padding-bottom:max(clamp(.8rem,4vw,2rem), env(safe-area-inset-bottom,0px));
+  overflow-y:auto;
+  background:rgba(8,10,18,.82);
+  -webkit-backdrop-filter:blur(7px);
+  backdrop-filter:blur(7px);
+}
+.voile > .tiroir{margin:auto;max-height:none}
