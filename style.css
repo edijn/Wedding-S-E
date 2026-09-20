@@ -27,15 +27,40 @@
   /* Le retrait sous la note, jusqu'au bord de l'écran. */
   --pied: clamp(1.15rem,3.6svh,1.5rem);
   /* Retrait sous la phrase posée sur la photo : c'est aussi la
-     hauteur qui sépare le bas du texte du bord du cadre. */
-  --sous-phrase: clamp(1.45rem,calc(.61vw + 1.28rem),1.6rem);
+     hauteur qui sépare le bas du texte du bord du cadre. Le réduire
+     fait DESCENDRE la phrase.
+
+     v11 — la phrase descend sur ordinateur, et là seulement. Le terme
+     d'origine ne sait que croître avec la largeur ; on lui superpose
+     donc une droite décroissante et on garde le plus petit des deux :
+
+       croissant   clamp(1.45rem, .61vw + 1.28rem, 1.6rem)
+       décroissant calc(2.185rem - 1.154vw)
+
+     Les deux valent 25,5 px à 820 px de large — la largeur d'un iPad,
+     le même point de croisement que pour le titre. En dessous c'est
+     le croissant qui gagne (téléphone et iPad inchangés au pixel),
+     au-dessus le décroissant : ~18 px sur un écran d'ordinateur, soit
+     7,6 px de descente. Le plancher de 1 rem n'entre en jeu que sur
+     un écran très large.
+
+     Les deux nombres vont par paire : ils sont calés ensemble pour
+     que le croisement tombe pile à 820 px. Pour descendre davantage
+     il faut repenter la droite, pas seulement baisser le 2.185rem. */
+  --sous-phrase: max(
+      min(clamp(1.45rem,calc(.61vw + 1.28rem),1.6rem),
+          calc(2.185rem - 1.154vw)),
+      1rem);
   /* Air entre le bord du cadre et le début du contenu bleu. */
   --haut-corps: clamp(.35rem,1.4vw,1rem);
   /* v10 — le retrait au-dessus de « Sophie & Edi » sur ORDINATEUR.
      C'est la seule valeur à toucher pour remonter le couple (plus
      petit) ou le redescendre (plus grand) sur grand écran. Elle ne
-     touche ni le téléphone ni l'iPad : voir .titre-photo. */
-  --titre-haut-large: .45rem;
+     touche ni le téléphone ni l'iPad : voir .titre-photo.
+     v11 : .45rem → .1rem. Le titre est maintenant à 1,6 px du bord
+     haut du cadre, qui est lui-même le bord haut de la page : c'est
+     le plancher, il n'y a plus rien au-dessus. */
+  --titre-haut-large: .1rem;
   --ivoire:   #F2EDE6;
   --dim:      #B3AFA8;
   --gris:     #D4D0C9;   /* heures : visibles, mais en retrait de l'or */
@@ -539,15 +564,19 @@ body{
    posent DANS la liste des réponses, juste sous l'option retenue —
    « nous serons tous là » ou « une partie d'entre nous ». Leur écart
    vertical vient donc du gap de la grille .choix et d'elles seules :
-   toute marge propre est remise à zéro, sauf le retrait à gauche, qui
-   les aligne sous le texte de l'option plutôt que sous son rond. */
+   toute marge propre est remise à zéro.
+   v11 : la paire est centrée au lieu d'être décalée de 2 rem vers la
+   droite. Chaque pastille vise 11 rem — ensemble elles font 22,5 rem,
+   la largeur du bloc des prénoms qui vient dessous, si bien que les
+   deux s'alignent. Elles rétrécissent si le tiroir est plus étroit. */
 .venue{
   display:flex;
   gap:.5rem;
-  margin:0 0 0 2rem;
+  justify-content:center;
+  margin:0;
 }
 .venue label{
-  flex:1;
+  flex:0 1 11rem;
   display:block;
   text-align:center;
   padding:.55rem .4rem;
@@ -570,10 +599,16 @@ body{
 .membre{padding:0}
 .membre:last-child{border-bottom:0}
 
+/* v11 : les prénoms ne sont plus un bloc à part sous la liste des
+   réponses, ils sont DANS la liste, juste sous les pastilles de
+   « une partie d'entre nous ». Le filet du haut disparaît : posé là,
+   il n'aurait plus séparé deux blocs mais coupé la liste en deux au
+   milieu. La largeur est calée sur celle de la paire de pastilles
+   (11 + .5 + 11 rem) et centrée comme elle : les deux s'alignent. */
 .membres{
-  padding:clamp(.7rem,2svh,1.3rem) 0 .3rem;
-  border-top:1px solid var(--encre-3);
-  margin-bottom:clamp(.7rem,2svh,1.4rem);
+  max-width:22.5rem;
+  margin:0 auto;
+  padding:clamp(.25rem,.9svh,.5rem) 0 0;
 }
 /* Les prénoms sur une grille de 3 colonnes : la largeur du tiroir est
    entièrement occupée, et une quatrième personne repart à la ligne
@@ -592,7 +627,8 @@ body{
 }
 .membres > p{
   font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);margin:0 0 clamp(.45rem,1.3svh,.9rem);
+  color:var(--dim);text-align:center;
+  margin:clamp(.3rem,1svh,.65rem) 0 clamp(.35rem,1.1svh,.7rem);
 }
 .membre > label{
   display:flex;align-items:center;gap:.85rem;

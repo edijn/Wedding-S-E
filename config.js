@@ -10,7 +10,7 @@
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec
    ⚠ Ne laisse pas cette ligne vide sur GitHub, sinon rien ne marche. */
-const API = "https://script.google.com/macros/s/AKfycbzQ-Q3RnZq2bnBXZhfGqSUjSTFGYXQNH0QJXgTeoOBe4RgYVYZAmJJ3m1hGFPLGxKqUlQ/exec";
+const API = "";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
@@ -110,7 +110,7 @@ const TEXTES = {
     rep_non_solo: "Je ne pourrai pas venir",
 
     venue_mariage: "Mariage",
-    venue_brunch:  "Mariage + brunch",
+    venue_brunch:  "Mariage + Brunch",
 
     qui:          "Qui sera présent ?",
     mot_label:    "Un mot pour nous (facultatif)",
@@ -154,7 +154,7 @@ const TEXTES = {
     rep_non_solo: "I will not be able to come",
 
     venue_mariage: "Wedding",
-    venue_brunch:  "Wedding + brunch",
+    venue_brunch:  "Wedding + Brunch",
 
     qui:          "Who will be coming?",
     mot_label:    "A word for us (optional)",

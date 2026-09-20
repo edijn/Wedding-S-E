@@ -232,30 +232,22 @@
          retenue, comme pour un foyer d'une seule personne. Deux
          options ne peuvent pas être cochées en même temps : il n'y a
          donc jamais deux jeux de pastilles, ni deux groupes de
-         boutons radio portant le même name="venue". */
+         boutons radio portant le même name="venue".
+         v11 : les prénoms suivent immédiatement les pastilles, dans
+         la liste elle-même. Le foyer lit donc de haut en bas : je
+         viens en partie → mariage ou mariage + brunch → qui vient.
+         Ils restent au-dessus de « nous ne pourrons pas venir ». */
       h += radio("tous", T.rep_tous, etat.reponse === "tous")
          + pastillesFoyer(etat.reponse === "tous")
          + radio("partiel", T.rep_partiel, etat.reponse === "partiel")
          + pastillesFoyer(etat.reponse === "partiel")
+         + grillePrenoms(etat.reponse === "partiel")
          + radio("aucun", T.rep_aucun, etat.reponse === "aucun");
     }
     h += '</div>';
 
     /* Le bloc « qui vient » ne porte plus que les prénoms : le choix
        du brunch a rejoint la liste des réponses, au-dessus. */
-    if (!seul && etat.reponse === "partiel"){
-      h += '<div class="membres">'
-        +  '<p>' + echap(T.qui) + '</p>'
-        +  '<div class="membres-grille">'
-        +  invites.map(function(i){
-             var coche = etat.presents.indexOf(i.prenom) >= 0;
-             return '<div class="membre"><label>'
-               + '<input type="checkbox" data-prenom="' + echap(i.prenom) + '"'
-               + (coche ? " checked" : "") + '>'
-               + '<span>' + echap(i.prenom) + '</span></label></div>';
-           }).join("")
-        +  '</div></div>';
-    }
 
     h += '<div class="champ">'
       +  '<label for="mot">' + echap(T.mot_label) + '</label>'
@@ -289,6 +281,25 @@
       + (etat.brunch ? " checked" : "") + '>'
       + '<span>' + echap(T.venue_brunch) + '</span></label>'
       + '</div></div>';
+  }
+
+  /* Les prénoms à cocher, posés dans la liste des réponses sous les
+     pastilles. Même contrat que pastillesFoyer : on rend une chaîne
+     vide quand le bloc n'a pas lieu d'être, l'appelant n'a donc pas
+     de condition à écrire. */
+  function grillePrenoms(visible){
+    if (!visible) return "";
+    return '<div class="membres">'
+      +  '<p>' + echap(T.qui) + '</p>'
+      +  '<div class="membres-grille">'
+      +  invites.map(function(i){
+           var coche = etat.presents.indexOf(i.prenom) >= 0;
+           return '<div class="membre"><label>'
+             + '<input type="checkbox" data-prenom="' + echap(i.prenom) + '"'
+             + (coche ? " checked" : "") + '>'
+             + '<span>' + echap(i.prenom) + '</span></label></div>';
+         }).join("")
+      +  '</div></div>';
   }
 
   function brancherChoix(){
