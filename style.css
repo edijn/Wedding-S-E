@@ -610,13 +610,16 @@ body{
   margin:0 auto;
   padding:clamp(.25rem,.9svh,.5rem) 0 0;
 }
-/* Les prénoms sur une grille de 3 colonnes : la largeur du tiroir est
-   entièrement occupée, et une quatrième personne repart à la ligne
-   suivante. auto-fit + minmax garde des colonnes lisibles quand un
-   prénom est long — on retombe à 2 colonnes plutôt que de tronquer. */
+/* Les prénoms sur deux colonnes.
+   v12 : deux colonnes FIXES, et non plus « autant que la largeur en
+   permet ». Le bloc fait 22,5 rem — la largeur de la paire de
+   pastilles — donc chaque colonne vaut environ 10,7 rem : large pour
+   un prénom, même long. Un foyer de trois donne deux lignes, dont la
+   seconde n'a qu'un prénom ; c'est voulu, la colonne de gauche reste
+   alignée d'une ligne à l'autre. */
 .membres-grille{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));
+  grid-template-columns:1fr 1fr;
   gap:.55rem 1.1rem;
 }
 /* Le choix mariage / brunch du foyer : une seule fois, sous l'option
