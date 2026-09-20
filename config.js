@@ -10,7 +10,7 @@
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec
    ⚠ Ne laisse pas cette ligne vide sur GitHub, sinon rien ne marche. */
-const API = "https://script.google.com/macros/s/AKfycbzQ-Q3RnZq2bnBXZhfGqSUjSTFGYXQNH0QJXgTeoOBe4RgYVYZAmJJ3m1hGFPLGxKqUlQ/exec";
+const API = "";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
@@ -86,7 +86,6 @@ const DATE_LIMITE = { fr:"30 novembre 2026", en:"30 November 2026" };
 const TEXTES = {
   fr: {
     titre_page:   "Sophie & Edi — 21 août 2027",
-    sur_titre:    "Mariage",                // au-dessus des prénoms
     save:         "Save the date",          // jamais traduit
     chargement:   "Un instant…",
 
@@ -134,7 +133,6 @@ const TEXTES = {
 
   en: {
     titre_page:   "Sophie & Edi — 21 August 2027",
-    sur_titre:    "Wedding",
     save:         "Save the date",
     chargement:   "One moment…",
 
