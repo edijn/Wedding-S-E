@@ -731,6 +731,22 @@ body{
    l'invitation ne fait plus sauter le couple.
    nowrap : « Sophie&Edi » ne contient aucune espace, mais la règle
    est explicite au cas où un futur réglage insérerait une coupure. */
+/* v13 — « Mariage » posé au-dessus des prénoms, sur la page du code.
+   Il est doré et sans filets, là où « Save the date » est ivoire et
+   encadré de deux traits : les deux lignes sont en capitales Cinzel,
+   c'est la couleur et les filets qui les distinguent, pas la taille.
+   Le texte vient de TEXTES (Mariage / Wedding), comme tout le reste ;
+   avant la saisie du code, c'est la langue par défaut qui s'applique. */
+.sur-titre{
+  font-family:var(--caps);
+  font-size:clamp(.66rem,2.2vw,.76rem);
+  font-weight:400;
+  letter-spacing:.3em;
+  text-indent:.3em;
+  text-transform:uppercase;
+  color:var(--or);
+  margin:0 0 clamp(.6rem,2.2svh,1rem);
+}
 .monogramme{
   font-family:var(--noms);font-style:italic;
   font-size:clamp(2.4rem,10vw,4.4rem);
