@@ -51,6 +51,8 @@ input:focus,select:focus{outline:none;border-color:var(--or)}
 .btn-fantome{background:none;color:var(--dim);border-color:var(--encre-3)}
 .btn-fantome:hover{background:var(--encre-2);color:var(--ivoire)}
 .btn-petit{padding:.28rem .6rem;font-size:.8rem}
+/* Les deux boutons de fin de ligne, côte à côte et jamais coupés. */
+.actions{display:flex;gap:.4rem;justify-content:flex-end;white-space:nowrap}
 
 /* ── connexion ── */
 .connexion{max-width:21rem;margin:16vh auto 0;text-align:center}
@@ -347,14 +349,98 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
         + '<td>' + etat + '</td>'
         + '<td>' + (i.brunch ? '<span class="pastille p-oui">oui</span>' : '—') + '</td>'
         + '<td class="mot">' + echap(i.mot) + '</td>'
-        + '<td><button class="btn btn-fantome btn-petit" data-cle="'
-        + echap(i.cle) + '">Supprimer</button></td>'
+        + '<td><div class="actions">'
+        + '<button class="btn btn-fantome btn-petit" data-partage="'
+        + echap(i.cle) + '">Partager</button>'
+        + '<button class="btn btn-fantome btn-petit" data-cle="'
+        + echap(i.cle) + '">Supprimer</button>'
+        + '</div></td>'
         + '</tr>';
     }).join("") : '<tr><td colspan="11" style="color:var(--dim)">Aucun invité.</td></tr>';
 
     $("corps").querySelectorAll("button[data-cle]").forEach(function(b){
       b.addEventListener("click", function(){ supprimer(b.getAttribute("data-cle")); });
     });
+
+    $("corps").querySelectorAll("button[data-partage]").forEach(function(b){
+      b.addEventListener("click", function(){
+        partager(b.getAttribute("data-partage"), b);
+      });
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     PARTAGER LE LIEN D'UN FOYER
+
+     Le message est volontairement nu : l'adresse du site, puis le
+     code. Rien d'autre — c'est le carton qui porte les mots, pas le
+     message.
+
+     L'adresse est déduite de celle de cette page : le site vit dans
+     le même dossier que admin.html, donc « ./ » suffit. Aucune URL
+     n'est écrite en dur, et un changement de dépôt n'oblige à rien.
+
+     Pour un foyer anglophone on ajoute ?lang=en : la page du code
+     s'affiche alors en anglais dès l'ouverture, sans attendre que le
+     code soit saisi pour connaître la langue du foyer.
+
+     navigator.share ouvre la feuille de partage native — WhatsApp,
+     Messages, Mail. Elle exige une page en HTTPS et un vrai clic ;
+     GitHub Pages fournit le premier, le bouton le second. Là où
+     elle n'existe pas (Safari de bureau ancien, Firefox), on tombe
+     sur la copie dans le presse-papier, qui rend le même service en
+     un geste de plus.
+     ═══════════════════════════════════════════════════════════════ */
+
+  var LIEN_SITE = new URL(".", location.href).href;
+
+  function messagePartage(inv){
+    var en = inv.langue === "en";
+    return LIEN_SITE + (en ? "?lang=en" : "")
+         + "\n" + (en ? "Code: " : "Code : ") + inv.code;
+  }
+
+  function partager(cle, bouton){
+    var inv = donnees.filter(function(x){ return x.cle === cle; })[0];
+    if (!inv) return;
+    var texte = messagePartage(inv);
+
+    if (navigator.share){
+      /* Un refus de l'utilisateur lève AbortError : on l'avale, il
+         n'y a rien à signaler quand quelqu'un ferme une feuille de
+         partage. */
+      navigator.share({ text: texte }).catch(function(){});
+      return;
+    }
+    copier(texte, bouton);
+  }
+
+  function copier(texte, bouton){
+    var libelle = bouton.textContent;
+    var fini = function(ok){
+      bouton.textContent = ok ? "Copié" : "Échec";
+      setTimeout(function(){ bouton.textContent = libelle; }, 1600);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(texte)
+        .then(function(){ fini(true); }, function(){ fini(false); });
+      return;
+    }
+
+    /* Repli pour les navigateurs sans presse-papier moderne : un
+       champ invisible, sélectionné puis copié, puis retiré. */
+    var z = document.createElement("textarea");
+    z.value = texte;
+    z.setAttribute("readonly", "");
+    z.style.position = "fixed";
+    z.style.opacity = "0";
+    document.body.appendChild(z);
+    z.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e){}
+    document.body.removeChild(z);
+    fini(ok);
   }
 
   function supprimer(cle){
