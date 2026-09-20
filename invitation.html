@@ -184,7 +184,8 @@
      singulier, et pas de liste de prénoms à cocher — il n'y a
      personne à départager.
      Foyer de plusieurs : trois réponses, et le choix mariage /
-     brunch se pose UNE fois pour tout le foyer.
+     brunch se pose UNE fois pour tout le foyer, directement sous
+     l'option retenue (v10).
      ═══════════════════════════════════════════════════════════════ */
 
   var tiroir = document.getElementById("tiroir");
@@ -227,31 +228,33 @@
          + pastillesFoyer(etat.reponse === "tous")
          + radio("aucun", T.rep_non_solo, etat.reponse === "aucun");
     } else {
+      /* Les pastilles mariage / brunch se posent juste SOUS l'option
+         retenue, comme pour un foyer d'une seule personne. Deux
+         options ne peuvent pas être cochées en même temps : il n'y a
+         donc jamais deux jeux de pastilles, ni deux groupes de
+         boutons radio portant le même name="venue". */
       h += radio("tous", T.rep_tous, etat.reponse === "tous")
+         + pastillesFoyer(etat.reponse === "tous")
          + radio("partiel", T.rep_partiel, etat.reponse === "partiel")
+         + pastillesFoyer(etat.reponse === "partiel")
          + radio("aucun", T.rep_aucun, etat.reponse === "aucun");
     }
     h += '</div>';
 
-    /* Le bloc « qui vient » n'apparaît que pour un foyer multiple
-       ayant choisi « une partie d'entre nous ». Les pastilles
-       mariage / brunch s'y posent une seule fois, en tête. */
-    if (!seul && (etat.reponse === "tous" || etat.reponse === "partiel")){
-      h += '<div class="membres">';
-      h += pastillesFoyer(true);
-      if (etat.reponse === "partiel"){
-        h += '<p>' + echap(T.qui) + '</p>';
-        h += '<div class="membres-grille">'
-          +  invites.map(function(i){
-               var coche = etat.presents.indexOf(i.prenom) >= 0;
-               return '<div class="membre"><label>'
-                 + '<input type="checkbox" data-prenom="' + echap(i.prenom) + '"'
-                 + (coche ? " checked" : "") + '>'
-                 + '<span>' + echap(i.prenom) + '</span></label></div>';
-             }).join("")
-          +  '</div>';
-      }
-      h += '</div>';
+    /* Le bloc « qui vient » ne porte plus que les prénoms : le choix
+       du brunch a rejoint la liste des réponses, au-dessus. */
+    if (!seul && etat.reponse === "partiel"){
+      h += '<div class="membres">'
+        +  '<p>' + echap(T.qui) + '</p>'
+        +  '<div class="membres-grille">'
+        +  invites.map(function(i){
+             var coche = etat.presents.indexOf(i.prenom) >= 0;
+             return '<div class="membre"><label>'
+               + '<input type="checkbox" data-prenom="' + echap(i.prenom) + '"'
+               + (coche ? " checked" : "") + '>'
+               + '<span>' + echap(i.prenom) + '</span></label></div>';
+           }).join("")
+        +  '</div></div>';
     }
 
     h += '<div class="champ">'

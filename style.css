@@ -31,6 +31,11 @@
   --sous-phrase: clamp(1.45rem,calc(.61vw + 1.28rem),1.6rem);
   /* Air entre le bord du cadre et le début du contenu bleu. */
   --haut-corps: clamp(.35rem,1.4vw,1rem);
+  /* v10 — le retrait au-dessus de « Sophie & Edi » sur ORDINATEUR.
+     C'est la seule valeur à toucher pour remonter le couple (plus
+     petit) ou le redescendre (plus grand) sur grand écran. Elle ne
+     touche ni le téléphone ni l'iPad : voir .titre-photo. */
+  --titre-haut-large: .45rem;
   --ivoire:   #F2EDE6;
   --dim:      #B3AFA8;
   --gris:     #D4D0C9;   /* heures : visibles, mais en retrait de l'or */
@@ -162,8 +167,16 @@ body{
      croissant descend à 1.5vw (plafond 1.5rem). Le terme décroissant
      est repenté à chaque fois pour garder la valeur du téléphone
      figée à 26 px à 440 px de large, ET pour que les deux courbes
-     continuent de se croiser pile à 820 px. */
-  padding:max(calc(2.616rem - 3.605vw), clamp(.7rem,1.5vw,1.5rem)) 1.2rem 0;
+     continuent de se croiser pile à 820 px.
+
+     v10 : le terme croissant n'est plus plafonné à 1.5 rem mais par
+     --titre-haut-large. Comme cette valeur est plus BASSE que la
+     pente au point de croisement, c'est le terme décroissant qui
+     continue de gouverner jusqu'à ~960 px, puis le padding se fige à
+     --titre-haut-large. Conséquence : rien ne bouge sur téléphone
+     (26 px à 440 px) ni sur iPad, et le couple remonte d'environ
+     14 px sur un écran d'ordinateur, sans le moindre palier. */
+  padding:max(calc(2.616rem - 3.605vw), min(1.5vw, var(--titre-haut-large))) 1.2rem 0;
   pointer-events:none;
 }
 
@@ -456,15 +469,25 @@ body{
    posé à la suite, pour qu'on puisse en travailler le design.
    ══════════════════════════════════════════════════════════════════ */
 
+/* v10 — le panneau tient dans l'écran sans défiler.
+   Tout le rythme vertical du tiroir est passé en svh : sur un écran
+   haut on retrouve exactement les valeurs d'avant (les plafonds des
+   clamp), et sur un écran court chaque espace se resserre en même
+   temps, proportionnellement, au lieu de pousser le bouton dehors.
+   Les valeurs horizontales, elles, ne bougent pas.
+   .voile garde son overflow-y:auto : c'est le filet de sécurité pour
+   un très grand foyer sur un très petit écran. */
 .tiroir{
   background:var(--encre-2);
   border:1px solid var(--encre-3);
   border-radius:4px;
   width:100%;max-width:32rem;
   margin:0 auto;
-  padding:2.4rem 1.8rem 2rem;
+  padding:clamp(1.2rem,3.4svh,2.4rem) 1.8rem clamp(1rem,2.6svh,2rem);
 }
-@media(min-width:40rem){.tiroir{padding:2.6rem}}
+/* padding latéral seulement : le haut et le bas restent gouvernés par
+   la hauteur d'écran, pas par la largeur. */
+@media(min-width:40rem){.tiroir{padding-left:2.6rem;padding-right:2.6rem}}
 
 .tiroir h2{
   font-family:var(--titre);
@@ -481,34 +504,47 @@ body{
 }
 
 /* ── les trois réponses ── */
-.choix{display:grid;gap:.7rem;margin:0 0 1.5rem}
-.choix label{
+.choix{
+  display:grid;
+  gap:clamp(.4rem,1.3svh,.7rem);
+  margin:0 0 clamp(.7rem,2svh,1.5rem);
+}
+/* « > label » et non « label » : depuis v10 les pastilles mariage /
+   brunch sont elles aussi DANS .choix, et ces règles-ci — le cadre,
+   le rond, le survol — ne doivent en aucun cas les atteindre. La
+   cascade suffisait, mais elle tenait au seul ordre des règles dans
+   le fichier ; l'enfant direct le dit explicitement. */
+.choix > label{
   display:flex;align-items:flex-start;gap:.9rem;
-  padding:1.05rem 1.1rem;
+  padding:clamp(.65rem,2.1svh,1.05rem) 1.1rem;
   border:1px solid var(--encre-3);
   border-radius:3px;
   cursor:pointer;
   transition:border-color .16s ease,background .16s ease;
 }
-.choix label:hover{border-color:var(--dim)}
-.choix label:has(input:checked){border-color:var(--or);background:rgba(232,182,103,.06)}
-.choix input{
+.choix > label:hover{border-color:var(--dim)}
+.choix > label:has(input:checked){border-color:var(--or);background:rgba(232,182,103,.06)}
+.choix > label > input{
   appearance:none;
   width:1.05rem;height:1.05rem;margin:.2rem 0 0;flex:0 0 auto;
   border:1px solid var(--dim);border-radius:50%;
   transition:border-color .16s ease,box-shadow .16s ease;
 }
-.choix input:checked{border-color:var(--or);box-shadow:inset 0 0 0 4px var(--or)}
+.choix > label > input:checked{border-color:var(--or);box-shadow:inset 0 0 0 4px var(--or)}
 .choix-txt{font-size:.96rem;line-height:1.45}
 .choix-txt small{display:block;color:var(--dim);font-size:.83rem;margin-top:.15rem}
 
 /* ── le choix mariage / brunch ──
-   Deux pastilles côte à côte, visibles seulement quand la réponse
-   ou la personne concernée est retenue. */
+   v10 : les pastilles ne sont plus dans le bloc des prénoms, elles se
+   posent DANS la liste des réponses, juste sous l'option retenue —
+   « nous serons tous là » ou « une partie d'entre nous ». Leur écart
+   vertical vient donc du gap de la grille .choix et d'elles seules :
+   toute marge propre est remise à zéro, sauf le retrait à gauche, qui
+   les aligne sous le texte de l'option plutôt que sous son rond. */
 .venue{
   display:flex;
   gap:.5rem;
-  margin:.5rem 0 .2rem 2rem;
+  margin:0 0 0 2rem;
 }
 .venue label{
   flex:1;
@@ -535,9 +571,9 @@ body{
 .membre:last-child{border-bottom:0}
 
 .membres{
-  padding:1.3rem 0 .4rem;
+  padding:clamp(.7rem,2svh,1.3rem) 0 .3rem;
   border-top:1px solid var(--encre-3);
-  margin-bottom:1.4rem;
+  margin-bottom:clamp(.7rem,2svh,1.4rem);
 }
 /* Les prénoms sur une grille de 3 colonnes : la largeur du tiroir est
    entièrement occupée, et une quatrième personne repart à la ligne
@@ -548,19 +584,19 @@ body{
   grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));
   gap:.55rem 1.1rem;
 }
-/* Le choix mariage / brunch du foyer, posé une seule fois au-dessus
-   des prénoms. Plus de pastilles par personne. */
+/* Le choix mariage / brunch du foyer : une seule fois, sous l'option
+   cochée. Deux options ne peuvent pas l'être en même temps, il n'y a
+   donc jamais deux jeux de pastilles à l'écran. */
 .venue-foyer{
-  margin:0 0 1.1rem;
+  margin:0;
 }
-.venue-foyer .venue{margin-left:0}
 .membres > p{
   font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--dim);margin:0 0 .9rem;
+  color:var(--dim);margin:0 0 clamp(.45rem,1.3svh,.9rem);
 }
 .membre > label{
   display:flex;align-items:center;gap:.85rem;
-  padding:.5rem .2rem;cursor:pointer;
+  padding:clamp(.28rem,1svh,.5rem) .2rem;cursor:pointer;
   font-size:1rem;
 }
 .membre > label input{
@@ -579,11 +615,20 @@ body{
   transform:rotate(43deg);
 }
 
-/* ── le mot libre ── */
-.champ{margin-bottom:1.6rem}
-.champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:.5rem}
+/* ── le mot libre ──
+   v10 : c'est ici que se jouait le plus gros du défilement. Entre le
+   bas du textarea et le bouton s'empilaient trois blancs — la marge
+   du champ, la hauteur réservée au message d'erreur, puis sa marge —
+   soit 4 rem de vide permanent pour un message qui n'apparaît
+   presque jamais. La ligne d'erreur ne réserve plus rien : elle ne
+   prend de la place que lorsqu'elle a quelque chose à dire. */
+.champ{margin-bottom:clamp(.45rem,1.4svh,.9rem)}
+.champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:clamp(.25rem,.9svh,.5rem)}
 .champ textarea{
-  width:100%;min-height:5rem;
+  width:100%;
+  /* le mot libre est le seul bloc élastique du panneau : c'est lui
+     qui rend sa hauteur en premier sur un écran court */
+  min-height:clamp(2.8rem,10svh,5rem);
   background:var(--encre);
   border:1px solid var(--encre-3);border-radius:3px;
   color:var(--ivoire);
@@ -592,7 +637,18 @@ body{
 }
 .champ textarea:focus{border-color:var(--or);outline:none}
 
-.pied{display:grid;gap:.7rem}
+/* Dans le tiroir, l'erreur ne réserve aucune hauteur à vide. Sur la
+   page du code, en revanche, la règle .erreur générale garde son
+   min-height : là-bas le message apparaît et disparaît sous les
+   cases, et une hauteur fixe évite que tout sursaute. */
+.tiroir .erreur{min-height:0;margin:0}
+.tiroir .erreur:not(:empty){margin:0 0 clamp(.35rem,1svh,.6rem)}
+
+.pied{display:grid;gap:clamp(.45rem,1.3svh,.7rem)}
+/* Les boutons du panneau suivent la hauteur d'écran, comme le reste ;
+   le bouton de l'invitation, lui, garde sa droite en vw. */
+.tiroir .btn{padding:clamp(.6rem,2svh,1.05rem) clamp(1.1rem,5vw,2.4rem)}
+.tiroir .btn-fantome{padding:clamp(.55rem,1.9svh,.85rem) 1.6rem}
 
 
 /* ── l'écran de confirmation ── */
@@ -630,12 +686,26 @@ body{
   align-items:center;justify-content:center;
   padding:2rem 1.5rem;text-align:center;
 }
+/* v10 : les prénoms en entier remplacent le monogramme S&E. La droite
+   de taille est celle de .noms sur l'invitation, pour que les deux
+   pages portent exactement le même titre — le passage du code à
+   l'invitation ne fait plus sauter le couple.
+   nowrap : « Sophie&Edi » ne contient aucune espace, mais la règle
+   est explicite au cas où un futur réglage insérerait une coupure. */
 .monogramme{
   font-family:var(--noms);font-style:italic;
-  font-size:clamp(3rem,14vw,4.5rem);
-  color:var(--ivoire);margin:0 0 .4rem;
+  font-size:clamp(2.4rem,10vw,4.4rem);
+  line-height:1.05;
+  letter-spacing:.005em;
+  white-space:nowrap;
+  color:var(--ivoire);margin:0 0 .5rem;
 }
-.monogramme .et{font-style:normal;color:var(--or);padding:0 .1em}
+.monogramme .et{
+  font-style:normal;color:var(--or);
+  padding:0 .12em;
+  display:inline-block;
+  transform:translateY(.06em);
+}
 .page-code .sous-titre{margin-bottom:clamp(2rem,7svh,3.5rem)}
 .invite-code{
   font-size:clamp(.88rem,3.6vw,1rem);
@@ -678,9 +748,12 @@ body{
 .voile{
   position:fixed;inset:0;z-index:40;
   display:flex;align-items:center;justify-content:center;
-  padding:clamp(.8rem,4vw,2rem);
-  padding-top:max(clamp(.8rem,4vw,2rem), env(safe-area-inset-top,0px));
-  padding-bottom:max(clamp(.8rem,4vw,2rem), env(safe-area-inset-bottom,0px));
+  /* v10 : le retrait vertical autour du panneau suit lui aussi la
+     hauteur d'écran — c'était jusqu'à 4 rem pris sur la hauteur utile
+     alors qu'ils étaient calculés sur la LARGEUR de la fenêtre. */
+  padding:clamp(.5rem,2svh,1.5rem) clamp(.8rem,4vw,2rem);
+  padding-top:max(clamp(.5rem,2svh,1.5rem), env(safe-area-inset-top,0px));
+  padding-bottom:max(clamp(.5rem,2svh,1.5rem), env(safe-area-inset-bottom,0px));
   overflow-y:auto;
   background:rgba(8,10,18,.82);
   -webkit-backdrop-filter:blur(7px);
