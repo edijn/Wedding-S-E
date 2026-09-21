@@ -10,7 +10,7 @@
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec
    ⚠ Ne laisse pas cette ligne vide sur GitHub, sinon rien ne marche. */
-const API = "https://script.google.com/macros/s/AKfycbyxOIwpVo-XMv_zW1R9WMbS47Gu_q152QkedCOmkCa_AHjiN1uGZMETgHvOk1lEN8r0RA/exec";
+const API = "";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
@@ -124,6 +124,7 @@ const TEXTES = {
     envoyer_solo: "Envoyer ma réponse",
     envoi_cours:  "Envoi…",
     annuler:      "Annuler",
+    retour:       "Retour",
     fermer:       "Fermer",
 
     /* confirmations */
@@ -175,6 +176,7 @@ const TEXTES = {
     envoyer_solo: "Send my reply",
     envoi_cours:  "Sending…",
     annuler:      "Cancel",
+    retour:       "Back",
     fermer:       "Close",
 
     merci_oui:    "Yeahhhhh! We can’t wait!",

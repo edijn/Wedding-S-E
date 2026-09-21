@@ -663,6 +663,23 @@ body{
    prend de la place que lorsqu'elle a quelque chose à dire. */
 .champ{margin-bottom:clamp(.45rem,1.4svh,.9rem)}
 .champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:clamp(.25rem,.9svh,.5rem)}
+/* ── le panneau en deux étapes (v17) ──
+   Étape 1 : la liste des réponses occupe le tiroir à elle seule, et
+   le bouton Annuler ferme. Étape 2 : le détail de la réponse
+   choisie, rappelée en tête.
+
+   Hors de la liste des réponses, les blocs ne bénéficient plus du
+   gap de la grille .choix : ils portent donc leur propre écart, sur
+   la même droite en svh que le reste du panneau. */
+.rappel{
+  font-family:var(--caps);
+  font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--or);text-align:center;
+  margin:0 0 clamp(.7rem,2.2svh,1.3rem);
+}
+.etape2 .venue-foyer{margin:0 0 clamp(.5rem,1.7svh,1.1rem)}
+.etape2 .membres{margin:0 auto clamp(.5rem,1.7svh,1.1rem)}
+
 /* ── les coordonnées du foyer ──
    v16 : adresse postale et e-mail, demandées seulement quand le foyer
    vient. Un filet et un intitulé en capitales les détachent des

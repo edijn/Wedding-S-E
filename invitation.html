@@ -200,6 +200,7 @@
   var tiroir = document.getElementById("tiroir");
   var voile  = document.getElementById("voile");
   var etat = {
+    etape: 1,                      // 1 = la décision, 2 = le détail
     reponse: null,                 // "tous" | "partiel" | "aucun"
     presents: prenoms.slice(),
     brunch: true,
@@ -225,7 +226,8 @@
   function ouvrirTiroir(){
     voile.hidden = false;
     document.body.style.overflow = "hidden";
-    dessinerChoix();
+    etat.etape = etat.reponse ? 2 : 1;
+    dessiner();
   }
 
   function fermerTiroir(){
@@ -233,54 +235,94 @@
     document.body.style.overflow = "";
   }
 
-  function dessinerChoix(){
+  /* ═══════════════════════════════════════════════════════════════
+     LE PANNEAU EN DEUX TEMPS  (v17)
+
+     Le panneau ne montre plus qu'une chose à la fois.
+
+       étape 1 — la décision, et rien d'autre : deux ou trois
+                 réponses, sans un seul champ à remplir.
+       étape 2 — ce que cette décision implique : le brunch, les
+                 prénoms, les coordonnées, le mot, puis l'envoi.
+
+     Toucher une réponse fait passer à l'étape 2 : le choix vaut
+     validation, il n'y a pas de bouton « suivant » à chercher.
+
+     Un foyer qui a déjà répondu rouvre directement sur l'étape 2,
+     tout prérempli — il vient presque toujours corriger un détail,
+     pas refaire son choix. « Retour » le ramène aux réponses.
+
+     Les deux étapes se dessinent dans le même tiroir : rien n'est
+     caché en CSS, tout est réécrit. L'état vit dans etat, jamais
+     dans le DOM, donc rien ne se perd d'un aller-retour à l'autre —
+     à condition de mémoriser les champs AVANT chaque redessin.
+     ═══════════════════════════════════════════════════════════════ */
+
+  function dessiner(){
+    if (etat.etape === 2 && etat.reponse) dessinerEtape2();
+    else                                  dessinerEtape1();
+  }
+
+  function dessinerEtape1(){
+    etat.etape = 1;
     var h = '<div class="choix">';
 
     if (seul){
-      h += radio("oui", T.rep_oui_solo, etat.reponse === "tous")
-         + pastillesFoyer(etat.reponse === "tous")
+      h += radio("oui",   T.rep_oui_solo, etat.reponse === "tous")
          + radio("aucun", T.rep_non_solo, etat.reponse === "aucun");
     } else {
-      /* Les pastilles mariage / brunch se posent juste SOUS l'option
-         retenue, comme pour un foyer d'une seule personne. Deux
-         options ne peuvent pas être cochées en même temps : il n'y a
-         donc jamais deux jeux de pastilles, ni deux groupes de
-         boutons radio portant le même name="venue".
-         v11 : les prénoms suivent immédiatement les pastilles, dans
-         la liste elle-même. Le foyer lit donc de haut en bas : je
-         viens en partie → mariage ou mariage + brunch → qui vient.
-         Ils restent au-dessus de « nous ne pourrons pas venir ». */
-      h += radio("tous", T.rep_tous, etat.reponse === "tous")
-         + pastillesFoyer(etat.reponse === "tous")
+      h += radio("tous",    T.rep_tous,    etat.reponse === "tous")
          + radio("partiel", T.rep_partiel, etat.reponse === "partiel")
-         + pastillesFoyer(etat.reponse === "partiel")
-         + grillePrenoms(etat.reponse === "partiel")
-         + radio("aucun", T.rep_aucun, etat.reponse === "aucun");
+         + radio("aucun",   T.rep_aucun,   etat.reponse === "aucun");
     }
-    h += '</div>';
 
-    /* Coordonnées : seulement si le foyer vient, en tout ou en
-       partie. Elles sont posées APRÈS la liste des réponses et non
-       dedans : glissées entre « une partie d'entre nous » et « nous
-       ne pourrons pas venir », deux champs de saisie couperaient la
-       liste en deux et donneraient à lire un formulaire au milieu
-       d'un choix. Ici l'ordre est celui de la décision — je viens,
-       voici où me joindre, un mot, j'envoie. */
-    h += coordonnees(etat.reponse === "tous" || etat.reponse === "partiel");
+    h += '</div>'
+      +  '<div class="pied">'
+      +  '<button class="btn btn-fantome" id="ann">' + echap(T.annuler) + '</button>'
+      +  '</div>';
+
+    tiroir.innerHTML = h;
+    brancherEtape1();
+  }
+
+  function dessinerEtape2(){
+    etat.etape = 2;
+    var vient = etat.reponse !== "aucun";
+
+    /* Le choix retenu est rappelé en tête : l'étape 2 ne dit pas
+       d'elle-même à quoi elle répond. */
+    var h = '<p class="rappel">' + echap(libelleReponse()) + '</p>'
+          + '<div class="etape2">';
+
+    if (vient){
+      h += pastillesFoyer(true);
+      h += grillePrenoms(etat.reponse === "partiel");
+      h += coordonnees(true);
+    }
 
     h += '<div class="champ">'
       +  '<label for="mot">' + echap(T.mot_label) + '</label>'
       +  '<textarea id="mot" placeholder="' + echap(T.mot_exemple) + '">'
       +  echap(etat.mot) + '</textarea></div>'
+      +  '</div>'
       +  '<p class="erreur" id="err-rsvp" role="status"></p>'
       +  '<div class="pied">'
       +  '<button class="btn" id="env">'
       +  echap(seul ? T.envoyer_solo : T.envoyer) + '</button>'
-      +  '<button class="btn btn-fantome" id="ann">' + echap(T.annuler) + '</button>'
+      +  '<button class="btn btn-fantome" id="retour">' + echap(T.retour) + '</button>'
       +  '</div>';
 
     tiroir.innerHTML = h;
-    brancherChoix();
+    brancherEtape2();
+  }
+
+  /* L'intitulé exact de la réponse choisie, dans la bonne langue et
+     au bon nombre. */
+  function libelleReponse(){
+    if (etat.reponse === "aucun")
+      return seul ? T.rep_non_solo : T.rep_aucun;
+    if (etat.reponse === "partiel") return T.rep_partiel;
+    return seul ? T.rep_oui_solo : T.rep_tous;
   }
 
   function radio(valeur, libelle, actif){
@@ -343,18 +385,27 @@
       +  '</div></div>';
   }
 
-  function brancherChoix(){
+  function brancherEtape1(){
     tiroir.querySelectorAll('input[name="rep"]').forEach(function(r){
       r.addEventListener("change", function(){
-        var v = r.value;
-        etat.reponse = (v === "oui") ? "tous" : v;
+        etat.reponse = (r.value === "oui") ? "tous" : r.value;
+
+        /* « Tous » recoche tout le foyer, « aucun » le décoche : sans
+           ça, un foyer qui change d'avis emporterait la sélection de
+           son choix précédent jusqu'à l'envoi. « Une partie » garde
+           ce qui était coché, c'est le seul cas où la sélection est
+           une information à part entière. */
         if (etat.reponse === "tous")  etat.presents = prenoms.slice();
         if (etat.reponse === "aucun") etat.presents = [];
-        memoriserChamps();
-        dessinerChoix();
+
+        dessinerEtape2();
       });
     });
 
+    tiroir.querySelector("#ann").addEventListener("click", fermerTiroir);
+  }
+
+  function brancherEtape2(){
     tiroir.querySelectorAll('input[name="venue"]').forEach(function(r){
       r.addEventListener("change", function(){ etat.brunch = (r.value === "brunch"); });
     });
@@ -369,7 +420,10 @@
         });
       });
 
-    tiroir.querySelector("#ann").addEventListener("click", fermerTiroir);
+    tiroir.querySelector("#retour").addEventListener("click", function(){
+      memoriserChamps();          /* avant le redessin, toujours */
+      dessinerEtape1();
+    });
     tiroir.querySelector("#env").addEventListener("click", soumettre);
   }
 
