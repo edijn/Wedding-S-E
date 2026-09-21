@@ -10,7 +10,7 @@
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec
    ⚠ Ne laisse pas cette ligne vide sur GitHub, sinon rien ne marche. */
-const API = "https://script.google.com/macros/s/AKfycbzQ-Q3RnZq2bnBXZhfGqSUjSTFGYXQNH0QJXgTeoOBe4RgYVYZAmJJ3m1hGFPLGxKqUlQ/exec";
+const API = "";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
@@ -113,6 +113,11 @@ const TEXTES = {
     venue_brunch:  "Mariage + Brunch",
 
     qui:          "Qui sera présent ?",
+    coord_titre:  "Pour vous joindre",
+    adresse_label:"Adresse postale",
+    adresse_ex:   "Numéro, rue, code postal, ville, pays",
+    email_label:  "Adresse e-mail",
+    email_ex:     "prenom.nom@exemple.fr",
     mot_label:    "Un mot pour nous (facultatif)",
     mot_exemple:  "Allergie, contrainte horaire, petit mot…",
     envoyer:      "Envoyer notre réponse",
@@ -128,6 +133,8 @@ const TEXTES = {
     merci_non_2:  "Vous nous manquerez",
 
     err_personne: "Choisis au moins une personne, ou indique que vous ne pourrez pas venir.",
+    err_adresse:  "Indique ton adresse postale, nous en avons besoin pour le faire-part.",
+    err_email:    "Cette adresse e-mail ne semble pas valide.",
     err_envoi:    "L’envoi a échoué. Réessaie dans un instant."
   },
 
@@ -157,6 +164,11 @@ const TEXTES = {
     venue_brunch:  "Wedding + Brunch",
 
     qui:          "Who will be coming?",
+    coord_titre:  "So we can reach you",
+    adresse_label:"Postal address",
+    adresse_ex:   "Number, street, postcode, town, country",
+    email_label:  "Email address",
+    email_ex:     "first.last@example.com",
     mot_label:    "A word for us (optional)",
     mot_exemple:  "Allergy, timing constraint, a quick note…",
     envoyer:      "Send our reply",
@@ -171,6 +183,8 @@ const TEXTES = {
     merci_non_2:  "We’ll miss you",
 
     err_personne: "Pick at least one person, or tell us you can’t make it.",
+    err_adresse:  "Please give your postal address — we need it for the invitation.",
+    err_email:    "This email address doesn’t look valid.",
     err_envoi:    "Sending failed. Please try again in a moment."
   }
 };

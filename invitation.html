@@ -58,7 +58,7 @@
   if (!brut || !code){ location.replace("index.html"); return; }
 
   var foyer   = JSON.parse(brut);
-  var invites = foyer.invites || [];          // déjà triés par prénom
+  var invites = foyer.invites || [];          // dans l'ordre du Sheet
   var seul    = !!foyer.seul || invites.length === 1;
 
   var p = new URLSearchParams(location.search);
@@ -74,6 +74,15 @@
   /* ═══════════════════════════════════════════════════════════════
      2. OUTILS
      ═══════════════════════════════════════════════════════════════ */
+
+  /* Volontairement permissif : il s'agit d'attraper une faute de
+     frappe, pas de juger de l'existence d'une boîte aux lettres. */
+  var EMAIL = /^[^@\s]+@[^@\s.]+(\.[^@\s.]+)+$/;
+
+  function focaliser(sel){
+    var n = tiroir.querySelector(sel);
+    if (n) n.focus();
+  }
 
   function echap(s){
     return String(s == null ? "" : s)
@@ -194,7 +203,9 @@
     reponse: null,                 // "tous" | "partiel" | "aucun"
     presents: prenoms.slice(),
     brunch: true,
-    mot: ""
+    mot: "",
+    adresse: "",
+    email: ""
   };
 
   /* Réponse déjà envoyée : on rouvre dessus plutôt que sur du vide. */
@@ -203,6 +214,8 @@
     etat.presents = r.presents || [];
     etat.brunch   = !!r.brunch;
     etat.mot      = r.mot || "";
+    etat.adresse  = r.adresse || "";
+    etat.email    = r.email || "";
     etat.reponse  = !etat.presents.length ? "aucun"
                   : (etat.presents.length === invites.length ? "tous" : "partiel");
   }
@@ -246,8 +259,14 @@
     }
     h += '</div>';
 
-    /* Le bloc « qui vient » ne porte plus que les prénoms : le choix
-       du brunch a rejoint la liste des réponses, au-dessus. */
+    /* Coordonnées : seulement si le foyer vient, en tout ou en
+       partie. Elles sont posées APRÈS la liste des réponses et non
+       dedans : glissées entre « une partie d'entre nous » et « nous
+       ne pourrons pas venir », deux champs de saisie couperaient la
+       liste en deux et donneraient à lire un formulaire au milieu
+       d'un choix. Ici l'ordre est celui de la décision — je viens,
+       voici où me joindre, un mot, j'envoie. */
+    h += coordonnees(etat.reponse === "tous" || etat.reponse === "partiel");
 
     h += '<div class="champ">'
       +  '<label for="mot">' + echap(T.mot_label) + '</label>'
@@ -283,6 +302,28 @@
       + '</div></div>';
   }
 
+  /* L'adresse postale et l'e-mail du foyer. Même contrat que
+     pastillesFoyer et grillePrenoms : chaîne vide quand le bloc n'a
+     pas lieu d'être. Un foyer qui ne vient pas ne voit jamais ces
+     champs, et le backend efface ceux d'un foyer qui se rétracte. */
+  function coordonnees(visible){
+    if (!visible) return "";
+    return '<div class="coord">'
+      +  '<p class="coord-titre">' + echap(T.coord_titre) + '</p>'
+      +  '<div class="champ champ-court">'
+      +  '<label for="adresse">' + echap(T.adresse_label) + '</label>'
+      +  '<textarea id="adresse" rows="2" autocomplete="street-address" '
+      +  'placeholder="' + echap(T.adresse_ex) + '">'
+      +  echap(etat.adresse) + '</textarea></div>'
+      +  '<div class="champ">'
+      +  '<label for="email">' + echap(T.email_label) + '</label>'
+      +  '<input type="email" id="email" inputmode="email" '
+      +  'autocomplete="email" autocapitalize="off" spellcheck="false" '
+      +  'placeholder="' + echap(T.email_ex) + '" '
+      +  'value="' + echap(etat.email) + '"></div>'
+      +  '</div>';
+  }
+
   /* Les prénoms à cocher, posés dans la liste des réponses sous les
      pastilles. Même contrat que pastillesFoyer : on rend une chaîne
      vide quand le bloc n'a pas lieu d'être, l'appelant n'a donc pas
@@ -309,7 +350,7 @@
         etat.reponse = (v === "oui") ? "tous" : v;
         if (etat.reponse === "tous")  etat.presents = prenoms.slice();
         if (etat.reponse === "aucun") etat.presents = [];
-        memoriserMot();
+        memoriserChamps();
         dessinerChoix();
       });
     });
@@ -332,9 +373,16 @@
     tiroir.querySelector("#env").addEventListener("click", soumettre);
   }
 
-  function memoriserMot(){
+  /* Le panneau est redessiné à chaque changement de réponse : sans
+     cette sauvegarde, tout ce qui a été tapé disparaîtrait au
+     moindre aller-retour entre deux options. */
+  function memoriserChamps(){
     var z = tiroir.querySelector("#mot");
     if (z) etat.mot = z.value;
+    var a = tiroir.querySelector("#adresse");
+    if (a) etat.adresse = a.value;
+    var e = tiroir.querySelector("#email");
+    if (e) etat.email = e.value;
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -342,12 +390,26 @@
      ═══════════════════════════════════════════════════════════════ */
 
   function soumettre(){
-    memoriserMot();
+    memoriserChamps();
     var err = tiroir.querySelector("#err-rsvp");
 
     if (!etat.reponse){ err.textContent = T.err_personne; return; }
     if (etat.reponse !== "aucun" && !etat.presents.length){
       err.textContent = T.err_personne; return;
+    }
+
+    /* Le foyer vient : on a besoin de savoir où lui écrire. Le
+       backend refait ces deux contrôles de son côté, l'URL /exec
+       étant publique. */
+    if (etat.reponse !== "aucun"){
+      if (!etat.adresse.trim()){
+        err.textContent = T.err_adresse;
+        focaliser("#adresse"); return;
+      }
+      if (!EMAIL.test(etat.email.trim())){
+        err.textContent = T.err_email;
+        focaliser("#email"); return;
+      }
     }
 
     var bouton = tiroir.querySelector("#env");
@@ -360,11 +422,14 @@
       code: code,
       presents: (etat.reponse === "aucun") ? [] : etat.presents,
       brunch: (etat.reponse !== "aucun") && etat.brunch,
-      mot: etat.mot
+      mot: etat.mot,
+      adresse: (etat.reponse === "aucun") ? "" : etat.adresse.trim(),
+      email:   (etat.reponse === "aucun") ? "" : etat.email.trim()
     })
     .then(function(d){
       if (!d || !d.ok) throw new Error(d && d.erreur);
-      foyer.reponse = { presents:etat.presents, brunch:etat.brunch, mot:etat.mot };
+      foyer.reponse = { presents:etat.presents, brunch:etat.brunch,
+                        mot:etat.mot, adresse:etat.adresse, email:etat.email };
       sessionStorage.setItem("foyer", JSON.stringify(foyer));
       majBouton();
       confirmer(etat.reponse !== "aucun");

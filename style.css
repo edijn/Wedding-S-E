@@ -663,7 +663,29 @@ body{
    prend de la place que lorsqu'elle a quelque chose à dire. */
 .champ{margin-bottom:clamp(.45rem,1.4svh,.9rem)}
 .champ label{display:block;font-size:.84rem;color:var(--dim);margin-bottom:clamp(.25rem,.9svh,.5rem)}
-.champ textarea{
+/* ── les coordonnées du foyer ──
+   v16 : adresse postale et e-mail, demandées seulement quand le foyer
+   vient. Un filet et un intitulé en capitales les détachent des
+   réponses : ce n'est plus un choix, c'est une saisie. Le champ
+   e-mail reprend trait pour trait l'habillage du textarea — même
+   fond, même filet, même police — pour que le bloc se lise comme un
+   seul objet. */
+.coord{
+  border-top:1px solid var(--encre-3);
+  padding-top:clamp(.6rem,1.8svh,1.1rem);
+  margin-bottom:clamp(.45rem,1.4svh,.9rem);
+}
+.coord-titre{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);text-align:center;
+  margin:0 0 clamp(.5rem,1.5svh,.9rem);
+}
+/* L'adresse tient en deux lignes : elle n'a pas besoin de la hauteur
+   du mot libre, qui reste le bloc élastique du panneau. */
+.champ-court textarea{min-height:clamp(2.4rem,7svh,3.6rem)}
+
+.champ textarea,
+.champ input[type="email"]{
   width:100%;
   /* le mot libre est le seul bloc élastique du panneau : c'est lui
      qui rend sa hauteur en premier sur un écran court */
@@ -674,7 +696,11 @@ body{
   font-family:var(--texte);font-size:.95rem;font-weight:300;
   padding:.85rem;resize:vertical;
 }
-.champ textarea:focus{border-color:var(--or);outline:none}
+.champ textarea:focus,
+.champ input[type="email"]:focus{border-color:var(--or);outline:none}
+/* Une ligne suffit à l'e-mail : le min-height hérité du textarea
+   ferait un champ deux fois trop haut. */
+.champ input[type="email"]{min-height:0;padding:.7rem .85rem}
 
 /* Dans le tiroir, l'erreur ne réserve aucune hauteur à vide. Sur la
    page du code, en revanche, la règle .erreur générale garde son

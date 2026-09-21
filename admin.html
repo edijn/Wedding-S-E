@@ -166,7 +166,7 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
         <tr>
           <th>Foyer</th><th>Code</th><th>Prénom</th><th>Nom</th>
           <th>Langue</th><th>Âge</th><th>Alcool</th>
-          <th>Réponse</th><th>Brunch</th><th>Mot</th><th></th>
+          <th>Réponse</th><th>Brunch</th><th>Adresse</th><th>Email</th><th>Mot</th><th></th>
         </tr>
       </thead>
       <tbody id="corps"></tbody>
@@ -348,6 +348,8 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
         + '<td>' + echap(i.alcool) + '</td>'
         + '<td>' + etat + '</td>'
         + '<td>' + (i.brunch ? '<span class="pastille p-oui">oui</span>' : '—') + '</td>'
+        + '<td class="mot">' + echap(i.adresse) + '</td>'
+        + '<td class="mot">' + echap(i.email) + '</td>'
         + '<td class="mot">' + echap(i.mot) + '</td>'
         + '<td><div class="actions">'
         + '<button class="btn btn-fantome btn-petit" data-partage="'
@@ -356,7 +358,7 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
         + echap(i.cle) + '">Supprimer</button>'
         + '</div></td>'
         + '</tr>';
-    }).join("") : '<tr><td colspan="11" style="color:var(--dim)">Aucun invité.</td></tr>';
+    }).join("") : '<tr><td colspan="13" style="color:var(--dim)">Aucun invité.</td></tr>';
 
     $("corps").querySelectorAll("button[data-cle]").forEach(function(b){
       b.addEventListener("click", function(){ supprimer(b.getAttribute("data-cle")); });
@@ -607,7 +609,7 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
 
   $("exporter").addEventListener("click", function(){
     var cles = ["foyer","code","prenom","nom","langue","age","alcool",
-                "repondu","present","brunch","mot"];
+                "repondu","present","brunch","adresse","email","mot"];
     var lignes = [cles.join(";")].concat(filtrees().map(function(i){
       return cles.map(function(c){
         var v = i[c];
