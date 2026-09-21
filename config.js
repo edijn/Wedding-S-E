@@ -10,7 +10,7 @@
 /* ── 1. L'ADRESSE DE TON APPS SCRIPT ──────────────────────────────
    Déployer ▸ Gérer les déploiements ▸ copier l'URL qui finit par /exec
    ⚠ Ne laisse pas cette ligne vide sur GitHub, sinon rien ne marche. */
-const API = "";
+const API = "https://script.google.com/macros/s/AKfycbyxOIwpVo-XMv_zW1R9WMbS47Gu_q152QkedCOmkCa_AHjiN1uGZMETgHvOk1lEN8r0RA/exec";
 
 
 /* ── 2. LA PHOTO ──────────────────────────────────────────────────
