@@ -113,6 +113,92 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
   padding:1.2rem;text-align:center;
 }
 .apercu{max-height:16rem;overflow:auto;margin-top:1rem}
+
+/* ══════════════════════════════════════════════════════════════
+   VUE TÉLÉPHONE  (v18)
+
+   Un tableau de treize colonnes ne se lit pas sur 390 px de large.
+   Sous 40 rem il cède la place à une liste : prénom, nom, état,
+   et le bouton Partager. Le détail complet s'ouvre en touchant la
+   ligne.
+
+   Les DEUX vues sont dessinées à chaque fois, depuis le même
+   filtrees() : une seule recherche, un seul filtre, aucun risque
+   que l'une affiche autre chose que l'autre. Le média query ne
+   fait que cacher celle dont on n'a pas besoin.
+   ══════════════════════════════════════════════════════════════ */
+.liste-m{display:none}
+
+.ligne-m{
+  display:flex;align-items:center;gap:.6rem;
+  background:var(--encre-2);border:1px solid var(--encre-3);
+  border-radius:4px;padding:.55rem .7rem;
+}
+.ligne-m-cible{
+  flex:1;min-width:0;text-align:left;
+  background:none;border:0;color:inherit;padding:0;cursor:pointer;
+}
+.ligne-m-nom{
+  display:block;font-size:.97rem;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ligne-m-bas{display:flex;align-items:center;gap:.4rem;margin-top:.2rem}
+
+/* Le badge d'envoi : posé une fois que le lien est parti, il vit
+   dans le navigateur qui l'a envoyé (voir partages, plus bas). */
+.badge-envoye{
+  display:inline-block;padding:.05rem .45rem;border-radius:999px;
+  font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;
+  background:rgba(232,182,103,.14);color:var(--or);
+  border:1px solid rgba(232,182,103,.3);
+}
+
+/* ── la fiche d'un invité ── */
+.voile-m{
+  position:fixed;inset:0;z-index:50;
+  background:rgba(14,18,32,.86);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding:1rem;
+  padding-bottom:max(1rem, env(safe-area-inset-bottom,0px));
+  overflow-y:auto;
+}
+.fiche{
+  width:100%;max-width:28rem;
+  background:var(--encre-2);border:1px solid var(--encre-3);
+  border-radius:6px;padding:1.2rem;
+}
+.fiche h3{
+  font-family:"Cinzel",serif;font-weight:700;font-size:1.05rem;
+  color:var(--or);margin:0 0 .2rem;
+}
+.fiche dl{display:grid;grid-template-columns:auto 1fr;gap:.35rem .9rem;margin:1rem 0}
+.fiche dt{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.fiche dd{margin:0;font-size:.9rem;word-break:break-word}
+.fiche .pied-fiche{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.fiche .pied-fiche .large{grid-column:span 2}
+
+@media(max-width:40rem){
+  .enveloppe{padding:1.2rem .9rem 3rem}
+  h1{font-size:1.2rem;margin-bottom:1.1rem}
+
+  .cadre{display:none}                 /* le tableau s'efface */
+  .liste-m{display:grid;gap:.5rem}
+
+  /* Quatre compteurs en carré. Les six autres ne disparaissent pas
+     du calcul, seulement de l'écran : ils reviennent sur grand
+     écran sans que rien ne soit recalculé. */
+  .stats{grid-template-columns:1fr 1fr;gap:.5rem}
+  .stat:nth-child(n+5){display:none}
+  .stat{padding:.6rem .7rem}
+  .stat b{font-size:1.35rem}
+
+  /* Recherche et filtre en pleine largeur, les deux boutons côte
+     à côte en dessous. */
+  .barre{grid-template-columns:1fr 1fr}
+  .barre > .champ:nth-child(-n+2){grid-column:span 2}
+  .barre > .champ:nth-child(n+3) label{display:none}
+  .barre .btn{width:100%}
+}
 [hidden]{display:none !important}
 </style>
 </head>
@@ -135,7 +221,7 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
      ne sont visibles que sur cette page.</p>
 
   <h2>Invités</h2>
-  <div class="grille" style="margin-bottom:.9rem">
+  <div class="grille barre" style="margin-bottom:.9rem">
     <div class="champ">
       <label for="filtre">Rechercher</label>
       <input id="filtre" placeholder="Prénom, foyer, code…">
@@ -160,6 +246,8 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
     </div>
   </div>
 
+  <div class="liste-m" id="liste-m"></div>
+
   <div class="cadre">
     <table>
       <thead>
@@ -172,6 +260,9 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
       <tbody id="corps"></tbody>
     </table>
   </div>
+
+  <!-- ─────────── FICHE D'UN INVITÉ (téléphone) ─────────── -->
+  <div class="voile-m" id="fiche" hidden><div class="fiche" id="fiche-corps"></div></div>
 
   <!-- ─────────── AJOUT ─────────── -->
   <h2>Ajouter un invité</h2>
@@ -293,9 +384,12 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
     var s = d.stats || {};
 
     $("stats").innerHTML = [
-      ["Invités", s.invites], ["Foyers", s.foyers],
-      ["Présents", s.presents], ["Absents", s.absents],
-      ["Sans réponse", s.attente], ["Au brunch", s.brunch],
+      /* L'ordre compte : sur téléphone, seuls les QUATRE premiers
+         sont affichés (voir .stat:nth-child(n+5) dans le style).
+         Ce sont ceux qu'on regarde en premier un matin de relance. */
+      ["Invités", s.invites], ["Présents", s.presents],
+      ["Sans réponse", s.attente], ["Absents", s.absents],
+      ["Foyers", s.foyers], ["Au brunch", s.brunch],
       ["Adultes", s.adultes], ["Enfants", s.enfants], ["Bébés", s.bebes],
       ["Boivent", s.alcool]
     ].map(function(x){
@@ -334,14 +428,11 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
   function dessinerTable(){
     var lignes = filtrees();
     $("corps").innerHTML = lignes.length ? lignes.map(function(i){
-      var etat = !i.repondu
-        ? '<span class="pastille p-attente">en attente</span>'
-        : (i.present ? '<span class="pastille p-oui">présent</span>'
-                     : '<span class="pastille p-non">absent</span>');
+      var etat = etatPastille(i);
       return '<tr>'
         + '<td>' + echap(i.foyer) + '</td>'
         + '<td class="code">' + echap(i.code) + '</td>'
-        + '<td>' + echap(i.prenom) + '</td>'
+        + '<td>' + echap(i.prenom) + ' ' + badgeEnvoye(i) + '</td>'
         + '<td>' + echap(i.nom) + '</td>'
         + '<td>' + echap(i.langue) + '</td>'
         + '<td>' + echap(i.age) + '</td>'
@@ -360,16 +451,135 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
         + '</tr>';
     }).join("") : '<tr><td colspan="13" style="color:var(--dim)">Aucun invité.</td></tr>';
 
-    $("corps").querySelectorAll("button[data-cle]").forEach(function(b){
+    /* La même liste, en version téléphone. Dessinée systématiquement,
+       cachée par le style sur grand écran : deux rendus, une seule
+       source de vérité. */
+    $("liste-m").innerHTML = lignes.length ? lignes.map(function(i){
+      return '<div class="ligne-m">'
+        + '<button class="ligne-m-cible" data-fiche="' + echap(i.cle) + '">'
+        + '<span class="ligne-m-nom">'
+        + echap((i.prenom + " " + i.nom).trim()) + '</span>'
+        + '<span class="ligne-m-bas">' + etatPastille(i) + badgeEnvoye(i) + '</span>'
+        + '</button>'
+        + '<button class="btn btn-fantome btn-petit" data-partage="'
+        + echap(i.cle) + '">Partager</button>'
+        + '</div>';
+    }).join("") : '<p class="aide">Aucun invité.</p>';
+
+    brancher($("corps"));
+    brancher($("liste-m"));
+  }
+
+  /* Les mêmes gestes, quel que soit le conteneur qui les porte. */
+  function brancher(zone){
+    zone.querySelectorAll("button[data-cle]").forEach(function(b){
       b.addEventListener("click", function(){ supprimer(b.getAttribute("data-cle")); });
     });
-
-    $("corps").querySelectorAll("button[data-partage]").forEach(function(b){
+    zone.querySelectorAll("button[data-partage]").forEach(function(b){
       b.addEventListener("click", function(){
         partager(b.getAttribute("data-partage"), b);
       });
     });
+    zone.querySelectorAll("button[data-fiche]").forEach(function(b){
+      b.addEventListener("click", function(){
+        ouvrirFiche(b.getAttribute("data-fiche"));
+      });
+    });
   }
+
+  function etatPastille(i){
+    return !i.repondu
+      ? '<span class="pastille p-attente">en attente</span>'
+      : (i.present ? '<span class="pastille p-oui">présent</span>'
+                   : '<span class="pastille p-non">absent</span>');
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     LE BADGE « ENVOYÉ »
+
+     Marqué au moment où le partage aboutit, pas au clic : une
+     feuille de partage refermée sans rien choisir ne compte pas.
+
+     La marque vit dans le localStorage de CE navigateur, pas dans
+     le Sheet. C'est délibéré — c'est un pense-bête personnel, pas
+     une donnée du mariage — mais ça se paie : envoyer depuis le
+     téléphone ne cochera rien sur le Mac. Si un jour ça gêne, la
+     marque doit remonter dans une colonne de l'onglet Invités.
+     ═══════════════════════════════════════════════════════════════ */
+
+  var CLE_PARTAGES = "partages-sophie-edi";
+
+  function partages(){
+    try { return JSON.parse(localStorage.getItem(CLE_PARTAGES)) || {}; }
+    catch (e){ return {}; }
+  }
+
+  function marquerPartage(cle){
+    try {
+      var p = partages();
+      p[cle] = true;
+      localStorage.setItem(CLE_PARTAGES, JSON.stringify(p));
+    } catch (e){}
+    dessinerTable();
+    /* La fiche ouverte porte le même badge : elle se redessine avec
+       le reste, sinon elle mentirait jusqu'à sa fermeture. */
+    if (ficheOuverte) ouvrirFiche(ficheOuverte);
+  }
+
+  function badgeEnvoye(i){
+    return partages()[i.cle] ? '<span class="badge-envoye">envoyé</span>' : "";
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     LA FICHE
+
+     Sur téléphone la liste ne montre que le nom ; tout le reste —
+     ce que le tableau affiche en treize colonnes — s'ouvre ici.
+     ═══════════════════════════════════════════════════════════════ */
+
+  var ficheOuverte = null;
+
+  function ouvrirFiche(cle){
+    var i = donnees.filter(function(x){ return x.cle === cle; })[0];
+    if (!i) return;
+    ficheOuverte = cle;
+
+    var ligne = function(t, v){
+      return v ? '<dt>' + t + '</dt><dd>' + echap(v) + '</dd>' : "";
+    };
+
+    $("fiche-corps").innerHTML =
+        '<h3>' + echap((i.prenom + " " + i.nom).trim()) + '</h3>'
+      + '<span class="ligne-m-bas">' + etatPastille(i) + badgeEnvoye(i) + '</span>'
+      + '<dl>'
+      + ligne("Foyer", i.foyer)
+      + '<dt>Code</dt><dd class="code">' + echap(i.code) + '</dd>'
+      + ligne("Langue", i.langue)
+      + ligne("Âge", i.age)
+      + ligne("Alcool", i.alcool)
+      + '<dt>Brunch</dt><dd>' + (i.brunch ? "Oui" : "Non") + '</dd>'
+      + ligne("Adresse", i.adresse)
+      + ligne("Email", i.email)
+      + ligne("Mot", i.mot)
+      + '</dl>'
+      + '<div class="pied-fiche">'
+      + '<button class="btn" data-partage="' + echap(i.cle) + '">Partager</button>'
+      + '<button class="btn btn-fantome" data-cle="' + echap(i.cle) + '">Supprimer</button>'
+      + '<button class="btn btn-fantome large" id="fermer-fiche">Fermer</button>'
+      + '</div>';
+
+    brancher($("fiche-corps"));
+    $("fiche-corps").querySelector("#fermer-fiche")
+      .addEventListener("click", fermerFiche);
+    $("fiche").hidden = false;
+  }
+
+  function fermerFiche(){ $("fiche").hidden = true; ficheOuverte = null; }
+
+  /* Toucher le voile, en dehors de la fiche, referme aussi. */
+  $("fiche").addEventListener("click", function(e){
+    if (e.target === $("fiche")) fermerFiche();
+  });
 
   /* ═══════════════════════════════════════════════════════════════
      PARTAGER LE LIEN D'UN FOYER
@@ -410,18 +620,21 @@ td.mot{white-space:normal;min-width:12rem;color:var(--dim);font-size:.83rem}
     if (navigator.share){
       /* Un refus de l'utilisateur lève AbortError : on l'avale, il
          n'y a rien à signaler quand quelqu'un ferme une feuille de
-         partage. */
-      navigator.share({ text: texte }).catch(function(){});
+         partage — et surtout, on ne marque rien comme envoyé. */
+      navigator.share({ text: texte })
+        .then(function(){ marquerPartage(cle); })
+        .catch(function(){});
       return;
     }
-    copier(texte, bouton);
+    copier(texte, bouton, cle);
   }
 
-  function copier(texte, bouton){
+  function copier(texte, bouton, cle){
     var libelle = bouton.textContent;
     var fini = function(ok){
       bouton.textContent = ok ? "Copié" : "Échec";
       setTimeout(function(){ bouton.textContent = libelle; }, 1600);
+      if (ok && cle) setTimeout(function(){ marquerPartage(cle); }, 1700);
     };
 
     if (navigator.clipboard && navigator.clipboard.writeText){
