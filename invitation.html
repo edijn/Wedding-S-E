@@ -125,13 +125,46 @@
          + ' aria-hidden="true">' + (ICONES[nom] || ICONES.fete) + '</svg>';
   }
 
-  function envoyer(charge){
+  /* ── un appel qui insiste (v20) ──
+     Apps Script ne répond jamais directement : /exec redirige vers
+     script.googleusercontent.com, et c'est cette seconde adresse, à
+     jeton court, qui renvoie par moments un 404. Le script, lui,
+     s'est exécuté jusqu'au bout — le journal en porte la trace et
+     le panneau Exécutions ne signale aucun échec. Seule la réponse
+     s'est perdue en route.
+
+     L'incident est passager et sans motif : on réessaie, plutôt que
+     d'annoncer à l'invité une panne de connexion qui n'existe pas.
+     Trois tentatives, espacées de 600 puis 1500 ms.
+
+     Rejouer un appel est sans risque ici : ouvrir ne fait que lire,
+     et repondre efface les lignes du foyer avant de les réécrire,
+     donc une tentative en double ne peut pas créer de doublon.
+
+     Un vrai code faux n'est PAS concerné : le backend répond
+     correctement { ok:false }, ce qui n'est pas une erreur réseau.
+     Le message « ce code ne correspond à aucune invitation »
+     s'affiche donc toujours du premier coup. */
+  function appelAPI(charge, reste){
+    if (reste === undefined) reste = 2;
     return fetch(API, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(charge)
-    }).then(function(r){ return r.json(); });
+    })
+    .then(function(r){
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .catch(function(err){
+      if (!reste) throw err;
+      return new Promise(function(suite){
+        setTimeout(suite, reste === 2 ? 600 : 1500);
+      }).then(function(){ return appelAPI(charge, reste - 1); });
+    });
   }
+
+  function envoyer(charge){ return appelAPI(charge); }
 
   /* ═══════════════════════════════════════════════════════════════
      3. L'INVITATION
